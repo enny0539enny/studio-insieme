@@ -106,9 +106,9 @@ export const dashboardQuery = queryOptions({
       });
       return {
         courseId: c.id,
-        plannedH: Math.round(plannedHours({ credits: c.credits, classHours: c.class_hours ?? 0 }, buffer)),
+        plannedH: Math.round(plannedHours({ credits: c.credits, classHours: c.class_hours ?? 0 })),
         completedH: Math.round(completedH * 10) / 10,
-        behind: (warnings[c.id] ?? 0) > 0 || missedH > 0,
+        behind: (warnings[c.id] ?? 0) > 0,
         missingH: warnings[c.id] ?? 0,
         mastery,
       };
