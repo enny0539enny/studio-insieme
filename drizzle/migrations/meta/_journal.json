@@ -29,6 +29,20 @@
       "when": 1792853112781,
       "tag": "0003_guest_onboarding_matching",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792853567352,
+      "tag": "0004_planner_home",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792854091887,
+      "tag": "0005_seed_history_evening_times",
+      "breakpoints": true
     }
   ]
 }

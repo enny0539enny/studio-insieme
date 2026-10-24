@@ -21,3 +21,6 @@
 - Onboarding gate: `_authenticated/route.tsx` redirects students whose `student_profiles.onboarding_completed` is false to `/onboarding`; archetype + match logic is pure in `src/lib/archetype.ts` (tested).
 - Matching reads other students only through the security-definer RPC `get_match_candidates()` (first name + matching fields, shared courses only); never widen `student_profiles` RLS for it.
 - Guests use anonymous auth; `handle_new_user` links them to the PoliMi demo program (year 1). Guests upgrade via `/account` (`updateUser`), keeping the same user id.
+- Study plan: pure generator in `src/lib/planner.ts` (tested); `src/lib/plan-sync.ts` marks missed sessions, updates personal_buffer after exams, and replaces only auto-generated `planned` rows (completed/missed/manual are kept). Runs after onboarding, on Home load when stale/missed, and after drags or settings changes.
+- Home data comes from one `dashboardQuery` (`src/lib/dashboard.ts`); mutations invalidate `["dashboard"]`.
+- Demo history for every new student/guest comes from `seed_demo_history()` called in `handle_new_user`.

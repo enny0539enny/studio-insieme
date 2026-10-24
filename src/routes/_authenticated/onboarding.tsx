@@ -21,6 +21,7 @@ import {
 } from "@/lib/archetype";
 import { t, locale } from "@/i18n";
 import { cn } from "@/lib/utils";
+import { regeneratePlan } from "@/lib/plan-sync";
 
 const o = t.onboarding;
 
@@ -187,6 +188,9 @@ function OnboardingPage() {
       });
       if (error) throw error;
       await supabase.from("privacy_settings").update({ map_active_allowed: a.mapAllowed }).eq("user_id", ctx.uid);
+      await supabase.from("planner_settings").upsert({ user_id: ctx.uid, preferred_hours: a.timeSlots });
+      // Generate the study plan right after onboarding.
+      await regeneratePlan(ctx.uid);
 
       const { data: rows } = await supabase.rpc("get_match_candidates");
       const me: Me = {
@@ -206,6 +210,7 @@ function OnboardingPage() {
       });
       localStorage.removeItem(storageKey);
       queryClient.invalidateQueries({ queryKey: ["me"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     } finally {
       setSaving(false);
     }
