@@ -143,7 +143,8 @@ export function generatePlan(input: {
     const remaining = topicLeft.reduce((s, t) => s + t.left, 0);
     // Work backward from the exam: how many days does this course need at a steady daily rate?
     const dailyRate = Math.min(MAX_PER_COURSE_PER_DAY, (settings.maxHoursPerDay * 60) / 2);
-    const daysNeeded = Math.ceil(remaining / dailyRate);
+    // 30% slack for classes, other exams and review days of other courses.
+    const daysNeeded = Math.ceil((remaining / dailyRate) * 1.3);
     let start = addDays(reviewStart, -daysNeeded);
     if (start < today) start = today;
     courseStart[c.id] = start;
