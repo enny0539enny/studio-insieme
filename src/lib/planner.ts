@@ -168,8 +168,8 @@ export function generatePlan(input: PlanInput): PlanResult {
   // Start from the formula's date; if a course doesn't fit (classes, other courses), pull only that course earlier.
   const extra: Record<string, number> = {};
   let best = runPlan(input, false, extra);
-  for (let i = 0; i < 12 && missingTotal(best) > 0; i++) {
-    for (const [id, h] of Object.entries(best.missingHours)) extra[id] = (extra[id] ?? 0) + Math.max(2, Math.ceil(h / 2));
+  for (let i = 0; i < 25 && missingTotal(best) > 0; i++) {
+    for (const [id, h] of Object.entries(best.missingHours)) extra[id] = (extra[id] ?? 0) + Math.max(2, Math.ceil(h / 1.5));
     const next = runPlan(input, false, extra);
     if (missingTotal(next) <= missingTotal(best)) best = next;
   }
@@ -299,9 +299,11 @@ function runPlan(input: PlanInput, startToday: boolean, extraDays: Record<string
     let last: string | null = null;
     let guard = 0;
     while (capacity >= MIN_SESSION && guard++ < 30) {
-      const active = states
-        .filter((s) => s.remaining > 0.5 && d >= courseStart[s.c.id]! && d < s.reviewStart)
-        .filter((s) => (perCourse[s.c.id] ?? 0) + MIN_SESSION <= MAX_PER_COURSE_PER_DAY)
+      const open = states.filter((s) => s.remaining > 0.5 && d >= courseStart[s.c.id]! && d < s.reviewStart);
+      // The per-course daily cap only matters when there is another course to alternate with.
+      const courseCap = open.length <= 1 ? 24 * 60 : MAX_PER_COURSE_PER_DAY;
+      const active = open
+        .filter((s) => (perCourse[s.c.id] ?? 0) + MIN_SESSION <= courseCap)
         .sort(
           (a, b) =>
             b.remaining / Math.max(1, daysBetween(d, b.reviewStart)) -
@@ -314,7 +316,7 @@ function runPlan(input: PlanInput, startToday: boolean, extraDays: Record<string
         MAX_SESSION,
         Math.max(MIN_SESSION, Math.round(s.remaining)),
         capacity,
-        MAX_PER_COURSE_PER_DAY - (perCourse[s.c.id] ?? 0),
+        courseCap - (perCourse[s.c.id] ?? 0),
       );
       len = Math.min(len, longestFree(free));
       if (len < MIN_SESSION) break;
