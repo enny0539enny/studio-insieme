@@ -80,7 +80,7 @@ export function TodaySection({ data }: { data: Dashboard }) {
   );
 }
 
-function FocusTimer({ session, name, onClose }: { session: DashSession | null; name: string; onClose: () => void }) {
+export function FocusTimer({ session, name, onClose }: { session: DashSession | null; name: string; onClose: () => void }) {
   const queryClient = useQueryClient();
   const [startedAt, setStartedAt] = useState<number>(0);
   const [elapsed, setElapsed] = useState(0);

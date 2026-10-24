@@ -4,6 +4,8 @@ import { ensurePlan } from "./plan-client";
 import { plannedHours, type Weight } from "./planner";
 
 export const COURSE_BG = ["bg-course-1", "bg-course-2", "bg-course-3", "bg-course-4", "bg-course-5"] as const;
+export const COURSE_SOFT = ["bg-course-1/25", "bg-course-2/25", "bg-course-3/25", "bg-course-4/25", "bg-course-5/25"] as const;
+export const COURSE_BORDER = ["border-course-1", "border-course-2", "border-course-3", "border-course-4", "border-course-5"] as const;
 export const COURSE_TEXT = ["text-course-1", "text-course-2", "text-course-3", "text-course-4", "text-course-5"] as const;
 
 export type DashSession = {
@@ -16,6 +18,8 @@ export type DashSession = {
   actual_minutes: number | null;
   is_manual: boolean;
   is_review: boolean;
+  kind: "study" | "review" | "exam_review";
+  class_event_id: string | null;
 };
 
 const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
