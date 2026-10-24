@@ -56,6 +56,137 @@ export type Database = {
           },
         ]
       }
+      blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blocks_blocked_id_fkey"
+            columns: ["blocked_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blocks_blocker_id_fkey"
+            columns: ["blocker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_members: {
+        Row: {
+          chat_id: string
+          user_id: string
+        }
+        Insert: {
+          chat_id: string
+          user_id: string
+        }
+        Update: {
+          chat_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_members_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_messages: {
+        Row: {
+          body: string
+          chat_id: string
+          created_at: string
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          chat_id: string
+          created_at?: string
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          chat_id?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chats: {
+        Row: {
+          created_at: string
+          id: string
+          ping_id: string | null
+          pinned: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ping_id?: string | null
+          pinned?: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ping_id?: string | null
+          pinned?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chats_ping_id_fkey"
+            columns: ["ping_id"]
+            isOneToOne: false
+            referencedRelation: "pings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       class_events: {
         Row: {
           course_id: string
@@ -430,6 +561,134 @@ export type Database = {
           },
         ]
       }
+      live_sessions: {
+        Row: {
+          activity: string
+          course_id: string | null
+          created_at: string
+          demo_auto_accept: boolean
+          ended_at: string | null
+          ends_at: string
+          general_subject: string
+          id: string
+          open_to_invitations: boolean
+          place_kind: string
+          subject_label: string
+          user_id: string
+          venue_id: string | null
+        }
+        Insert: {
+          activity: string
+          course_id?: string | null
+          created_at?: string
+          demo_auto_accept?: boolean
+          ended_at?: string | null
+          ends_at: string
+          general_subject?: string
+          id?: string
+          open_to_invitations?: boolean
+          place_kind?: string
+          subject_label: string
+          user_id: string
+          venue_id?: string | null
+        }
+        Update: {
+          activity?: string
+          course_id?: string | null
+          created_at?: string
+          demo_auto_accept?: boolean
+          ended_at?: string | null
+          ends_at?: string
+          general_subject?: string
+          id?: string
+          open_to_invitations?: boolean
+          place_kind?: string
+          subject_label?: string
+          user_id?: string
+          venue_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_sessions_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_sessions_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pings: {
+        Row: {
+          chat_id: string | null
+          created_at: string
+          id: string
+          live_session_id: string
+          message: string
+          recipient_id: string
+          responded_at: string | null
+          sender_id: string
+          status: Database["public"]["Enums"]["ping_status"]
+        }
+        Insert: {
+          chat_id?: string | null
+          created_at?: string
+          id?: string
+          live_session_id: string
+          message: string
+          recipient_id: string
+          responded_at?: string | null
+          sender_id: string
+          status?: Database["public"]["Enums"]["ping_status"]
+        }
+        Update: {
+          chat_id?: string | null
+          created_at?: string
+          id?: string
+          live_session_id?: string
+          message?: string
+          recipient_id?: string
+          responded_at?: string | null
+          sender_id?: string
+          status?: Database["public"]["Enums"]["ping_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pings_live_session_id_fkey"
+            columns: ["live_session_id"]
+            isOneToOne: false
+            referencedRelation: "live_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pings_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pings_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       planner_settings: {
         Row: {
           buffer_updated_courses: string[]
@@ -483,6 +742,7 @@ export type Database = {
           leaderboard_opt_in: boolean
           map_active: boolean
           map_active_allowed: boolean
+          map_consent_at: string | null
           open_to_invitations: boolean
           updated_at: string
           user_id: string
@@ -492,6 +752,7 @@ export type Database = {
           leaderboard_opt_in?: boolean
           map_active?: boolean
           map_active_allowed?: boolean
+          map_consent_at?: string | null
           open_to_invitations?: boolean
           updated_at?: string
           user_id: string
@@ -501,6 +762,7 @@ export type Database = {
           leaderboard_opt_in?: boolean
           map_active?: boolean
           map_active_allowed?: boolean
+          map_consent_at?: string | null
           open_to_invitations?: boolean
           updated_at?: string
           user_id?: string
@@ -562,6 +824,48 @@ export type Database = {
             columns: ["university_id"]
             isOneToOne: false
             referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reports: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string
+          reported_id: string
+          reporter_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason: string
+          reported_id: string
+          reporter_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string
+          reported_id?: string
+          reporter_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_reported_id_fkey"
+            columns: ["reported_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -856,11 +1160,78 @@ export type Database = {
         }
         Relationships: []
       }
+      venues: {
+        Row: {
+          approved: boolean
+          created_at: string
+          id: string
+          lat: number
+          lng: number
+          name: string
+          opening_hours: string | null
+          suggested_by: string | null
+          type: string
+        }
+        Insert: {
+          approved?: boolean
+          created_at?: string
+          id?: string
+          lat: number
+          lng: number
+          name: string
+          opening_hours?: string | null
+          suggested_by?: string | null
+          type?: string
+        }
+        Update: {
+          approved?: boolean
+          created_at?: string
+          id?: string
+          lat?: number
+          lng?: number
+          name?: string
+          opening_hours?: string | null
+          suggested_by?: string | null
+          type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      _create_ping_chat: { Args: { _ping_id: string }; Returns: string }
+      cancel_ping: { Args: { _ping_id: string }; Returns: undefined }
+      chat_partner_blocked: {
+        Args: { _chat_id: string; _user_id: string }
+        Returns: boolean
+      }
+      get_live_sessions: {
+        Args: never
+        Returns: {
+          activity: string
+          archetype: string
+          course_id: string
+          ends_at: string
+          first_name: string
+          general_subject: string
+          is_demo: boolean
+          is_mine: boolean
+          open_to_invitations: boolean
+          place_kind: string
+          program_name: string
+          program_year: number
+          session_id: string
+          social: number
+          subject_label: string
+          tags: string[]
+          university_id: string
+          university_name: string
+          user_id: string
+          venue_id: string
+        }[]
+      }
       get_match_candidates: {
         Args: never
         Returns: {
@@ -883,6 +1254,11 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_blocked_between: { Args: { _a: string; _b: string }; Returns: boolean }
+      is_chat_member: {
+        Args: { _chat_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_course_teacher: {
         Args: { _course_id: string; _user_id: string }
         Returns: boolean
@@ -891,7 +1267,43 @@ export type Database = {
         Args: { _course_id: string; _user_id: string }
         Returns: boolean
       }
+      my_chats: {
+        Args: never
+        Returns: {
+          chat_id: string
+          last_at: string
+          last_body: string
+          other_archetype: string
+          other_first_name: string
+          other_id: string
+          other_is_demo: boolean
+          other_social: number
+          pinned: Json
+        }[]
+      }
+      my_pings: {
+        Args: never
+        Returns: {
+          chat_id: string
+          created_at: string
+          id: string
+          incoming: boolean
+          message: string
+          other_archetype: string
+          other_first_name: string
+          other_id: string
+          other_is_demo: boolean
+          other_social: number
+          status: Database["public"]["Enums"]["ping_status"]
+        }[]
+      }
+      respond_ping: {
+        Args: { _accept: boolean; _ping_id: string }
+        Returns: string
+      }
       seed_demo_history: { Args: { _uid: string }; Returns: undefined }
+      send_ping: { Args: { _session_id: string }; Returns: string }
+      simulate_demo_reply: { Args: { _ping_id: string }; Returns: string }
       topic_peers_this_week: {
         Args: never
         Returns: {
@@ -907,6 +1319,7 @@ export type Database = {
       attendance_source: "university" | "self"
       data_source: "university" | "student"
       enrollment_role: "student" | "teacher"
+      ping_status: "pending" | "accepted" | "declined" | "cancelled" | "expired"
       session_status: "planned" | "completed" | "missed"
       topic_weight: "high" | "medium" | "low"
     }
@@ -1040,6 +1453,7 @@ export const Constants = {
       attendance_source: ["university", "self"],
       data_source: ["university", "student"],
       enrollment_role: ["student", "teacher"],
+      ping_status: ["pending", "accepted", "declined", "cancelled", "expired"],
       session_status: ["planned", "completed", "missed"],
       topic_weight: ["high", "medium", "low"],
     },
