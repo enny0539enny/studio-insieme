@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { t } from "@/i18n";
+import { GuestButton } from "@/components/GuestButton";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -75,8 +76,16 @@ function AuthPage() {
         <h1 className="mt-6 font-display text-3xl font-semibold">
           {mode === "signin" ? t.auth.signInTitle : t.auth.signUpTitle}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">{t.auth.subtitle}</p>
-        <form onSubmit={onSubmit} className="mt-8 space-y-5">
+        <div className="mt-6">
+          <GuestButton />
+        </div>
+        <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-widest text-muted-foreground">
+          <span className="h-px flex-1 bg-border" />
+          {t.auth.or}
+          <span className="h-px flex-1 bg-border" />
+        </div>
+        <p className="text-sm text-muted-foreground">{t.auth.subtitle}</p>
+        <form onSubmit={onSubmit} className="mt-5 space-y-5">
           {mode === "signup" && (
             <div className="space-y-2">
               <Label htmlFor="name">{t.auth.fullName}</Label>

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArchetypeAvatar } from "@/components/ArchetypeAvatar";
 import { Home, BookOpen, Map, Users, MessageCircle, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { t } from "@/i18n";
@@ -16,6 +17,36 @@ const items = [
 export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const { data: me } = useQuery({
+    queryKey: ["me"],
+    queryFn: async () => {
+      const { data } = await supabase.auth.getUser();
+      const u = data.user!;
+      const [p, sp] = await Promise.all([
+        supabase.from("profiles").select("full_name").eq("id", u.id).maybeSingle(),
+        supabase.from("student_profiles").select("archetype, likert_answers").eq("user_id", u.id).maybeSingle(),
+      ]);
+      const likert = (sp.data?.likert_answers ?? {}) as { social?: number };
+      return {
+        isGuest: !!u.is_anonymous,
+        name: p.data?.full_name ?? "",
+        archetype: sp.data?.archetype ?? null,
+        social: likert.social,
+      };
+    },
+  });
+
+  const guestBlock = me?.isGuest && (
+    <div className="flex flex-col gap-1">
+      <span className="w-fit rounded-full bg-secondary/15 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-secondary">
+        {t.guest.badge}
+      </span>
+      <Link to="/account" className="text-xs font-medium text-primary hover:underline">
+        {t.guest.keepData}
+      </Link>
+    </div>
+  );
 
   async function signOut() {
     await queryClient.cancelQueries();
@@ -44,6 +75,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Link>
           ))}
         </nav>
+        <div className="mb-4 flex items-center gap-3 px-2">
+          <ArchetypeAvatar archetype={me?.archetype} social={me?.social} className="h-10 w-10" />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold">{me?.name}</p>
+            {guestBlock}
+          </div>
+        </div>
         <button
           onClick={signOut}
           className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent"
@@ -56,9 +94,13 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Mobile header */}
       <header className="flex items-center justify-between px-5 pt-5 md:hidden">
         <span className="font-display text-xl font-semibold text-primary">{t.app.name}</span>
+        <div className="flex items-center gap-3">
+          {guestBlock && <div className="text-right [&>div]:items-end">{guestBlock}</div>}
+          <ArchetypeAvatar archetype={me?.archetype} social={me?.social} className="h-9 w-9" />
         <button onClick={signOut} aria-label={t.nav.signOut} className="rounded-full p-2 text-muted-foreground">
           <LogOut className="h-5 w-5" strokeWidth={1.75} />
         </button>
+        </div>
       </header>
 
       <main className="px-5 pb-28 pt-6 md:ml-64 md:px-12 md:pb-12 md:pt-12">

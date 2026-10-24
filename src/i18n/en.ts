@@ -1,8 +1,5 @@
-import type { it } from "./it";
-
-type Shape<T> = { [K in keyof T]: T[K] extends string ? string : T[K] extends readonly (infer U)[] ? readonly Shape<U>[] : Shape<T[K]> };
-
-export const en: Shape<typeof it> = {
+// Source-of-truth UI strings (English). `it.ts` is a partial Italian translation.
+export const en = {
   app: {
     name: "UniMate",
     tagline: "Organize your study time, understand your courses, review smarter, find people to study with.",
@@ -19,6 +16,19 @@ export const en: Shape<typeof it> = {
       { title: "Study buddies", text: "Find people in your course to review with." },
     ],
   },
+  guest: {
+    try: "Try UniMate without an account",
+    tryHint: "Explore with Politecnico di Milano demo courses.",
+    badge: "Guest",
+    keepData: "Create an account to keep your data",
+    error: "We couldn't open a guest session. Please try again.",
+  },
+  account: {
+    title: "Keep your data",
+    subtitle: "Add your university email and a password. Everything you did as a guest stays.",
+    submit: "Create account",
+    done: "Your account is ready.",
+  },
   auth: {
     signInTitle: "Welcome back",
     signUpTitle: "Create your account",
@@ -30,6 +40,7 @@ export const en: Shape<typeof it> = {
     signUp: "Sign up",
     toSignUp: "No account yet? Sign up",
     toSignIn: "Already have an account? Sign in",
+    or: "or",
     domainNotAllowed: "This email doesn't belong to a partner university. Accepted domains:",
     checkEmail: "We sent you a confirmation email. Open the link to activate your account.",
     genericError: "Something went wrong. Please try again.",
@@ -42,7 +53,7 @@ export const en: Shape<typeof it> = {
     nextExam: "Next exam",
     noExam: "No exam scheduled",
     professor: "Professor",
-    year: "year",
+    year: "Year",
     source: "Data provided by your university",
     addedByYou: "added by you",
     empty: "No courses found for your account.",
@@ -54,6 +65,137 @@ export const en: Shape<typeof it> = {
     mappa: "See where others study, only if you choose to.",
     persone: "Find study partners who match you.",
     chat: "Messages with your groups and study partners.",
+  },
+  onboarding: {
+    back: "Back",
+    next: "Continue",
+    s0: {
+      title: "Find people to study with.",
+      subtitle: "90 seconds to understand how you study and who you'd get along with. No photos, no profiles to write.",
+      nameLabel: "What's your name?",
+      namePlaceholder: "Your first name",
+      fromUniversity: "From your university",
+      cta: "Let's start",
+    },
+    s1: {
+      title: "How do you really study?",
+      caption: "There's no right answer. It helps us find someone you'll work well with.",
+      rows: [
+        { key: "explain", left: "I prefer explaining", right: "I prefer listening" },
+        { key: "silence", left: "I study in silence", right: "I study by talking" },
+        { key: "plan", left: "I plan everything", right: "I work in sprints" },
+        { key: "social", left: "Others energize me", right: "I recharge alone" },
+      ],
+      scenarioTitle: "Three days before the exam, you…",
+      scenarios: {
+        reread: "Reread everything alone, calmly",
+        ask: "Ask questions to people who know more",
+        teach: "Explain things to someone to make them stick",
+        mock: "Do mock exams",
+        panic: "Panic. Then catch up in one night",
+      },
+    },
+    s2: { title: "What are you looking for right now?", caption: "You can change it anytime." },
+    lookingFor: {
+      quiet: { title: "Quiet company", text: "We each study our own thing, together. We only talk on breaks." },
+      review: { title: "Review out loud", text: "We explain the lecture to each other and compare notes." },
+      sparring: { title: "Exam sparring", text: "We quiz each other in turn, like the professor would." },
+      coach: { title: "Accountability buddy", text: "Someone who keeps me on schedule. And I do the same." },
+      unblock: {
+        title: "Quick unblock",
+        text: "I'm stuck on something. Looking for someone stuck on the same thing. 25 minutes and done.",
+      },
+    },
+    s3: {
+      title: "Where, when, with how many.",
+      groupLabel: "With how many?",
+      group: { pair: "In pairs", small: "Small group (3-4)", depends: "Depends" },
+      placesLabel: "Where do you usually study?",
+      places: { library: "Library", study_room: "Study room", cafe: "Café", home: "Home", online: "Online" },
+      slotsLabel: "When are you most awake?",
+      slots: { morning: "Morning", afternoon: "Afternoon", evening: "Evening", night: "Night" },
+      livingLabel: "How do you live university?",
+      living: { commuter: "Commuter", moved: "Moved here to study", local: "Local" },
+    },
+    s4: {
+      title: "And outside the books?",
+      caption: "Pick 3. They're icebreakers, not a judgment.",
+      tags: [
+        "Spritz", "Five-a-side football", "TV series", "Cooking", "Gym", "Gaming", "Live music", "Photography",
+        "Travel", "Books", "Board games", "Running", "Coffee", "Anime", "Politics", "Startups", "Cinema", "Hiking",
+        "Padel", "Vinyl", "Skating", "Volunteering", "Fashion", "Podcasts", "Drawing", "Basketball", "Yoga", "Tech",
+        "Comics", "Festivals",
+      ],
+      other: "+ Other",
+      otherPlaceholder: "Your interest",
+      add: "Add",
+      mapLabel: "Show me on the map when I study",
+      mapCaption:
+        "Others will only see your avatar, what you study and the place (e.g. a library). Never your exact location, never your home.",
+      cta: "Discover who you are",
+    },
+    reveal: {
+      caption: "Your study archetype",
+      firstMatch: "Your first match",
+      nextSession: "Next session",
+      imIn: "I'm in",
+      more: "See more matches",
+      noMatch: "We're looking for someone for you. We'll let you know as soon as there's a match.",
+      goHome: "Go to Home",
+      saving: "Saving…",
+    },
+  },
+  match: {
+    theyExplain: (name: string) => `${name} prefers explaining, you prefer listening`,
+    youExplain: (name: string) => `you prefer explaining, ${name} prefers listening`,
+    bothSilent: "you both study best in silence",
+    bothPlan: "you both plan everything ahead",
+    bothSprint: "you both work in sprints",
+    sharedExam: (course: string) => `you both have the ${course} exam coming up`,
+    sharedSlot: (slot: string) => `you're both most awake in the ${slot}`,
+    sharedCourse: (course: string) => `you're both taking ${course}`,
+  },
+  archetypes: {
+    lighthouse: {
+      name: "The Lighthouse",
+      tagline: "The point of reference",
+      description: "You explain calmly and know where you're all going. Others look for you when they're lost.",
+    },
+    spark: {
+      name: "The Spark",
+      tagline: "You light up the discussion",
+      description: "You get bored alone and come alive when there's someone to think out loud with.",
+    },
+    cartographer: {
+      name: "The Cartographer",
+      tagline: "Diagrams, maps, order",
+      description: "You listen, take notes, and in the end you have the map everyone wants to photograph.",
+    },
+    explorer: {
+      name: "The Explorer",
+      tagline: "The right question at the right time",
+      description: "You learn by asking questions others don't think of. In sprints, but you get there.",
+    },
+    seismograph: {
+      name: "The Seismograph",
+      tagline: "You feel the group's mood",
+      description: "You adapt to whoever is in front of you. You hold different people together.",
+    },
+    metronome: {
+      name: "The Metronome",
+      tagline: "Silence and rhythm",
+      description: "You study best in silence, next to someone doing the same. Zero chatter, zero distractions.",
+    },
+    sparring: {
+      name: "The Sparring Partner",
+      tagline: "Quiz and get quizzed",
+      description: "You learn under pressure. You want someone to ask you the tough questions before the professor does.",
+    },
+    lantern: {
+      name: "The Lantern",
+      tagline: "The glue",
+      description: "You listen and keep morale up. Without you the group falls apart by the second session.",
+    },
   },
   weight: { high: "High weight", medium: "Medium weight", low: "Low weight" },
   demo: "Demo",
