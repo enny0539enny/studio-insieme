@@ -1,0 +1,69 @@
+// All user-facing strings. Add `en.ts` with the same shape to support English.
+export const it = {
+  app: {
+    name: "StudySync",
+    tagline: "Organizza lo studio, capisci i corsi, ripassa meglio, trova con chi studiare.",
+    partner: "In collaborazione con le università partner",
+  },
+  nav: {
+    home: "Home",
+    studio: "Studio",
+    mappa: "Mappa",
+    persone: "Persone",
+    chat: "Chat",
+    signOut: "Esci",
+  },
+  landing: {
+    title: "Il tuo semestre, finalmente in ordine.",
+    cta: "Accedi con l'email universitaria",
+    goToApp: "Vai alla tua Home",
+    features: [
+      { title: "Tempo di studio", text: "Pianifica le settimane a partire da lezioni ed esami reali." },
+      { title: "Corsi chiari", text: "Argomenti ufficiali con il loro peso, materiali del docente." },
+      { title: "Compagni di studio", text: "Trova persone del tuo corso con cui ripassare." },
+    ],
+  },
+  auth: {
+    signInTitle: "Bentornato",
+    signUpTitle: "Crea il tuo account",
+    subtitle: "Usa la tua email istituzionale di un'università partner.",
+    fullName: "Nome e cognome",
+    email: "Email universitaria",
+    password: "Password",
+    signIn: "Accedi",
+    signUp: "Registrati",
+    toSignUp: "Non hai un account? Registrati",
+    toSignIn: "Hai già un account? Accedi",
+    domainNotAllowed: "Questa email non appartiene a un'università partner. Domini accettati:",
+    checkEmail: "Ti abbiamo inviato un'email di conferma. Apri il link per attivare l'account.",
+    genericError: "Qualcosa non ha funzionato. Riprova.",
+    invalidCredentials: "Email o password non corretti.",
+  },
+  home: {
+    greeting: "Ciao",
+    yourCourses: "I tuoi corsi del semestre",
+    cfu: "CFU",
+    nextExam: "Prossimo appello",
+    noExam: "Nessun appello",
+    professor: "Docente",
+    year: "anno",
+    source: "Dati forniti dall'università",
+    addedByYou: "inserita da te",
+    empty: "Nessun corso trovato per il tuo account.",
+    teacherBadge: "Docente",
+  },
+  placeholder: {
+    soon: "In arrivo",
+    studio: "Il tuo tutor di studio personale. Le conversazioni restano private.",
+    mappa: "Scopri dove studiano gli altri, solo se lo scegli tu.",
+    persone: "Trova compagni di studio compatibili con te.",
+    chat: "Messaggi con i tuoi gruppi e compagni di studio.",
+  },
+  weight: { high: "Peso alto", medium: "Peso medio", low: "Peso basso" },
+  demo: "Demo",
+  meta: {
+    homeDesc: "StudySync aiuta gli studenti universitari a organizzare lo studio, capire i corsi e trovare compagni di studio.",
+  },
+} as const;
+
+export const t = it;
