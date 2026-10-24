@@ -1,9 +1,11 @@
-import { supabase } from "@/integrations/supabase/client";
-import { generatePlan, selfStudyHours, type PlanCourse, type Weight } from "./planner";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
+import { classTopics, generatePlan, selfStudyHours, type PlanCourse, type Weight } from "./planner";
+
+type Client = SupabaseClient<Database>;
 
 /** Loads everything the generator needs, marks missed sessions, regenerates and stores the plan. */
-export async function regeneratePlan(uid: string) {
-  const now = new Date();
+export async function regeneratePlanWith(supabase: Client, uid: string, now = new Date()) {
 
   // 1. Missed sessions: planned ones whose end has passed. They are rescheduled by regenerating.
   await supabase
@@ -16,13 +18,13 @@ export async function regeneratePlan(uid: string) {
   const [enr, settingsRes, sessionsRes] = await Promise.all([
     supabase
       .from("enrollments")
-      .select("courses(id, credits, class_hours, course_topics(id, weight, sort_order), exams(exam_date), class_events(starts_at, ends_at))")
+      .select("courses(id, credits, class_hours, course_topics(id, weight, sort_order), exams(exam_date), class_events(id, starts_at, ends_at))")
       .eq("user_id", uid)
       .eq("role", "student"),
     supabase.from("planner_settings").select("*").eq("user_id", uid).maybeSingle(),
     supabase
       .from("study_sessions_planned")
-      .select("course_id, starts_at, ends_at, status, actual_minutes, is_manual, topic_ids")
+      .select("course_id, starts_at, ends_at, status, actual_minutes, is_manual, topic_ids, class_event_id")
       .eq("user_id", uid)
       .in("status", ["completed", "planned"]),
   ]);
@@ -56,6 +58,8 @@ export async function regeneratePlan(uid: string) {
       .map((e) => new Date(e.exam_date))
       .filter((d) => d > now)
       .sort((a, b) => a.getTime() - b.getTime())[0];
+    const topics = c.course_topics.map((t) => ({ id: t.id, weight: t.weight as Weight, sortOrder: t.sort_order }));
+    const map = classTopics(c.class_events.map((e) => ({ id: e.id, start: new Date(e.starts_at) })), topics);
     return {
       id: c.id,
       credits: c.credits,
@@ -65,7 +69,8 @@ export async function regeneratePlan(uid: string) {
           .filter((e) => new Date(e.ends_at) <= now)
           .reduce((m, e) => m + (new Date(e.ends_at).getTime() - new Date(e.starts_at).getTime()), 0) / 3600000,
       examAt: upcoming ?? null,
-      topics: c.course_topics.map((t) => ({ id: t.id, weight: t.weight as Weight, sortOrder: t.sort_order })),
+      topics,
+      classes: c.class_events.map((e) => ({ id: e.id, start: new Date(e.starts_at), end: new Date(e.ends_at), topicIds: map[e.id] ?? [] })),
     };
   });
 
@@ -88,6 +93,7 @@ export async function regeneratePlan(uid: string) {
           ? (s.actual_minutes ?? 0)
           : (new Date(s.ends_at).getTime() - new Date(s.starts_at).getTime()) / 60000,
       topicIds: s.topic_ids,
+      classEventId: s.class_event_id,
     }));
 
   const plan = generatePlan({
@@ -119,6 +125,8 @@ export async function regeneratePlan(uid: string) {
     starts_at: s.start.toISOString(),
     ends_at: s.end.toISOString(),
     is_review: s.isReview,
+    kind: s.kind,
+    class_event_id: s.classEventId ?? null,
   }));
   for (let i = 0; i < rows.length; i += 400) {
     await supabase.from("study_sessions_planned").insert(rows.slice(i, i + 400));
@@ -137,7 +145,7 @@ export async function regeneratePlan(uid: string) {
 }
 
 /** Regenerates when there is no plan yet or a session was missed. */
-export async function ensurePlan(uid: string) {
+export async function ensurePlanWith(supabase: Client, uid: string) {
   const [{ data: settings }, { count }] = await Promise.all([
     supabase.from("planner_settings").select("plan_generated_at").eq("user_id", uid).maybeSingle(),
     supabase
@@ -147,5 +155,5 @@ export async function ensurePlan(uid: string) {
       .eq("status", "planned")
       .lt("ends_at", new Date().toISOString()),
   ]);
-  if (!settings?.plan_generated_at || (count ?? 0) > 0) await regeneratePlan(uid);
+  if (!settings?.plan_generated_at || (count ?? 0) > 0) await regeneratePlanWith(supabase, uid);
 }

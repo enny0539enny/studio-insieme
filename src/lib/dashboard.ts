@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ensurePlan } from "./plan-sync";
+import { ensurePlan } from "./plan-client";
 import { plannedHours, type Weight } from "./planner";
 
 export const COURSE_BG = ["bg-course-1", "bg-course-2", "bg-course-3", "bg-course-4", "bg-course-5"] as const;

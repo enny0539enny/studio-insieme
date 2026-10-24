@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Check, ChevronLeft, ChevronRight, GraduationCap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { regeneratePlan } from "@/lib/plan-sync";
+import { regeneratePlan } from "@/lib/plan-client";
 import { COURSE_BG, startOfWeek, type Dashboard } from "@/lib/dashboard";
 import { t, locale } from "@/i18n";
 import { cn } from "@/lib/utils";

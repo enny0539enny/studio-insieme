@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { regeneratePlan } from "@/lib/plan-sync";
+import { regeneratePlan } from "@/lib/plan-client";
 import { COURSE_BG, type Dashboard } from "@/lib/dashboard";
 import { t, locale } from "@/i18n";
 import { cn } from "@/lib/utils";

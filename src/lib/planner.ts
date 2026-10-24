@@ -71,7 +71,10 @@ export function classTopics(classes: { id: string; start: Date }[], topics: Plan
   const N = sortedC.length;
   const T = sortedT.length;
   sortedC.forEach((c, i) => {
-    if (T === 0) return (out[c.id] = []);
+    if (T === 0) {
+      out[c.id] = [];
+      return;
+    }
     const a = Math.floor((i * T) / N);
     const b = Math.floor(((i + 1) * T - 1) / N);
     out[c.id] = sortedT.slice(a, Math.max(a, b) + 1).map((t) => t.id);
@@ -244,7 +247,7 @@ function runPlan(input: PlanInput, startToday: boolean, extraDays: Record<string
 
     const push = (courseId: string, s: number, len: number, topicIds: string[], kind: SessionKind, classEventId?: string) => {
       sessions.push({ courseId, topicIds, start: atMinute(d, s), end: atMinute(d, s + len), isReview: kind !== "study", kind, ...(classEventId ? { classEventId } : {}) });
-      free = subtract(free, s, s + len + BREAK);
+      free = subtract(free, s - BREAK, s + len + BREAK);
       capacity -= len;
     };
 
@@ -271,7 +274,7 @@ function runPlan(input: PlanInput, startToday: boolean, extraDays: Record<string
       const s = findSlot(free, len, dayPreferred);
       if (s == null) return false;
       sessions.push({ courseId, topicIds, start: atMinute(d, s), end: atMinute(d, s + len), isReview, kind: isReview ? "exam_review" : "study" });
-      free = subtract(free, s, s + len + BREAK);
+      free = subtract(free, s - BREAK, s + len + BREAK);
       capacity -= len;
       return true;
     };
