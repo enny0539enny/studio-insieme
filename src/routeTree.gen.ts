@@ -12,9 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedMappaRouteImport } from './routes/_authenticated/mappa'
+import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedPersoneRouteImport } from './routes/_authenticated/persone'
 import { Route as AuthenticatedStudioRouteImport } from './routes/_authenticated/studio'
 
@@ -32,6 +34,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedChatRoute = AuthenticatedChatRouteImport.update({
   id: '/chat',
   path: '/chat',
@@ -45,6 +52,11 @@ const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
 const AuthenticatedMappaRoute = AuthenticatedMappaRouteImport.update({
   id: '/mappa',
   path: '/mappa',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPersoneRoute = AuthenticatedPersoneRouteImport.update({
@@ -61,18 +73,22 @@ const AuthenticatedStudioRoute = AuthenticatedStudioRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/account': typeof AuthenticatedAccountRoute
   '/chat': typeof AuthenticatedChatRoute
   '/home': typeof AuthenticatedHomeRoute
   '/mappa': typeof AuthenticatedMappaRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/persone': typeof AuthenticatedPersoneRoute
   '/studio': typeof AuthenticatedStudioRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/account': typeof AuthenticatedAccountRoute
   '/chat': typeof AuthenticatedChatRoute
   '/home': typeof AuthenticatedHomeRoute
   '/mappa': typeof AuthenticatedMappaRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/persone': typeof AuthenticatedPersoneRoute
   '/studio': typeof AuthenticatedStudioRoute
 }
@@ -81,26 +97,47 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/chat': typeof AuthenticatedChatRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/mappa': typeof AuthenticatedMappaRoute
+  '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/persone': typeof AuthenticatedPersoneRoute
   '/_authenticated/studio': typeof AuthenticatedStudioRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/chat' | '/home' | '/mappa' | '/persone' | '/studio'
+    | '/'
+    | '/auth'
+    | '/account'
+    | '/chat'
+    | '/home'
+    | '/mappa'
+    | '/onboarding'
+    | '/persone'
+    | '/studio'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/chat' | '/home' | '/mappa' | '/persone' | '/studio'
+  to:
+    | '/'
+    | '/auth'
+    | '/account'
+    | '/chat'
+    | '/home'
+    | '/mappa'
+    | '/onboarding'
+    | '/persone'
+    | '/studio'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/account'
     | '/_authenticated/chat'
     | '/_authenticated/home'
     | '/_authenticated/mappa'
+    | '/_authenticated/onboarding'
     | '/_authenticated/persone'
     | '/_authenticated/studio'
   fileRoutesById: FileRoutesById
@@ -134,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/account': {
+      id: '/_authenticated/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AuthenticatedAccountRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/chat': {
       id: '/_authenticated/chat'
       path: '/chat'
@@ -155,6 +199,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMappaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/onboarding': {
+      id: '/_authenticated/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/persone': {
       id: '/_authenticated/persone'
       path: '/persone'
@@ -173,17 +224,21 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedChatRoute: typeof AuthenticatedChatRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedMappaRoute: typeof AuthenticatedMappaRoute
+  AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPersoneRoute: typeof AuthenticatedPersoneRoute
   AuthenticatedStudioRoute: typeof AuthenticatedStudioRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedChatRoute: AuthenticatedChatRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedMappaRoute: AuthenticatedMappaRoute,
+  AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPersoneRoute: AuthenticatedPersoneRoute,
   AuthenticatedStudioRoute: AuthenticatedStudioRoute,
 }

@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarClock, Layers, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { t } from "@/i18n";
+import { GuestButton } from "@/components/GuestButton";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -34,11 +35,14 @@ function Landing() {
           {t.landing.title}
         </h1>
         <p className="mt-6 max-w-xl text-lg text-muted-foreground">{t.app.tagline}</p>
-        <div className="mt-10 flex flex-wrap gap-3">
-          <Button asChild size="lg">
+        <div className="mt-10 max-w-md">
+          <GuestButton />
+        </div>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <Button asChild size="lg" variant="outline">
             <Link to="/auth">{t.landing.cta}</Link>
           </Button>
-          <Button asChild size="lg" variant="outline">
+          <Button asChild size="lg" variant="ghost">
             <Link to="/home">{t.landing.goToApp}</Link>
           </Button>
         </div>
