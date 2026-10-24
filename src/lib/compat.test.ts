@@ -46,7 +46,7 @@ describe("compatibility", () => {
 describe("whyLine", () => {
   const s = {
     courseAndSlot: (c: string, sl: string) => `You're both preparing ${c} and study in the ${sl}.`,
-    course: (c: string) => `You're both preparing ${c};`,
+    course: (c: string) => `You're both preparing ${c}`,
     theyExplain: (n: string) => `${n} prefers explaining, you prefer listening`,
     youExplain: (n: string) => `you prefer explaining, ${n} prefers listening`,
     slot: (sl: string) => `You both study in the ${sl}.`,
@@ -62,7 +62,7 @@ describe("whyLine", () => {
   });
   it("falls back to explain contrast when no course or slot", () => {
     expect(whyLine(me, { ...base, sharedCourseIds: [], timeSlots: [] }, {}, id, id, s)).toBe(
-      "You prefer explaining, Marta prefers listening.",
+      "Marta prefers explaining, you prefer listening.",
     );
   });
 });

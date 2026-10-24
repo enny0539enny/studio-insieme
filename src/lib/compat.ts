@@ -84,7 +84,7 @@ export function whyLine(
   let explain: string | null = null;
   if (me.likert.explain >= 4 && c.likert.explain <= 2) explain = s.theyExplain(c.firstName);
   if (me.likert.explain <= 2 && c.likert.explain >= 4) explain = s.youExplain(c.firstName);
-  if (course) return explain ? `${s.course(course)} ${explain}.` : `${s.course(course)}.`.replace("..", ".");
+  if (course) return explain ? `${s.course(course)}; ${explain}.` : `${s.course(course)}.`;
   if (explain) return explain.charAt(0).toUpperCase() + explain.slice(1) + ".";
   if (slot) return s.slot(slotLabel(slot));
   const tag = overlap(me.tags, c.tags)[0];
