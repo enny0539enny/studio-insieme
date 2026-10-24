@@ -8,6 +8,8 @@ export type PlanCourse = {
   id: string;
   credits: number;
   classHours: number;
+  /** Hours of class events already held this semester; counted as done. */
+  pastClassHours?: number;
   examAt: Date | null;
   topics: PlanTopic[];
 };
@@ -42,12 +44,17 @@ const SLOT_WINDOWS: Record<string, [number, number]> = {
   night: [22 * 60, 24 * 60],
 };
 
-/** credits × 25 − class hours, times the personal buffer. */
+/** credits × 25 − class hours. The personal buffer never inflates hours; it only moves the start earlier. */
 export function selfStudyHours(c: Pick<PlanCourse, "credits" | "classHours">): number {
   return Math.max(0, c.credits * 25 - c.classHours);
 }
-export function plannedHours(c: Pick<PlanCourse, "credits" | "classHours">, buffer: number): number {
-  return selfStudyHours(c) * buffer;
+export function plannedHours(c: Pick<PlanCourse, "credits" | "classHours">): number {
+  return selfStudyHours(c);
+}
+/** Days before the review window to start: remaining hours ÷ max hours per day × buffer. */
+export function startOffsetDays(remainingHours: number, maxHoursPerDay: number, buffer: number): number {
+  if (remainingHours <= 0 || maxHoursPerDay <= 0) return 0;
+  return Math.ceil((remainingHours / maxHoursPerDay) * buffer);
 }
 
 /** Splits hours across topics proportionally to weight (high 3, medium 2, low 1). */
@@ -113,13 +120,20 @@ const missingTotal = (r: PlanResult) => Object.values(r.missingHours).reduce((a,
 
 /** Works backward from each exam; if that leaves hours unscheduled, retries starting every course today. */
 export function generatePlan(input: PlanInput): PlanResult {
-  const backward = runPlan(input, false);
-  if (missingTotal(backward) === 0) return backward;
-  const early = runPlan(input, true);
-  return missingTotal(early) < missingTotal(backward) ? early : backward;
+  // Start from the formula's date; if a course doesn't fit (classes, other courses), pull only that course earlier.
+  const extra: Record<string, number> = {};
+  let best = runPlan(input, false, extra);
+  for (let i = 0; i < 12 && missingTotal(best) > 0; i++) {
+    for (const [id, h] of Object.entries(best.missingHours)) extra[id] = (extra[id] ?? 0) + Math.max(2, Math.ceil(h / 2));
+    const next = runPlan(input, false, extra);
+    if (missingTotal(next) <= missingTotal(best)) best = next;
+  }
+  if (missingTotal(best) === 0) return best;
+  const early = runPlan(input, true, {});
+  return missingTotal(early) < missingTotal(best) ? early : best;
 }
 
-function runPlan(input: PlanInput, startToday: boolean): PlanResult {
+function runPlan(input: PlanInput, startToday: boolean, extraDays: Record<string, number>): PlanResult {
   const { courses, busy, fixed, settings, now } = input;
   const dayEnd = Math.min(parseHHMM(settings.noStudyAfter), 24 * 60);
   const today = startOfDay(now);
@@ -139,25 +153,24 @@ function runPlan(input: PlanInput, startToday: boolean): PlanResult {
     if (!c.examAt || c.examAt <= now) continue;
     const examDay = startOfDay(c.examAt);
     const reviewStart = addDays(examDay, -REVIEW_DAYS);
-    const hours = topicHours(c.topics, plannedHours(c, settings.buffer));
+    const hours = topicHours(c.topics, plannedHours(c));
     const order =
       settings.mode === "reduced"
         ? [...c.topics].sort((a, b) => WEIGHT_FACTOR[b.weight] - WEIGHT_FACTOR[a.weight] || a.sortOrder - b.sortOrder)
         : [...c.topics].sort((a, b) => a.sortOrder - b.sortOrder);
     const topicLeft = order.map((t) => ({ id: t.id, left: (hours[t.id] ?? 0) * 60 }));
     // Work already done or placed by hand counts against the topics in order.
-    let done = fixed.filter((f) => f.courseId === c.id).reduce((s, f) => s + f.minutes, 0);
+    let done =
+      fixed.filter((f) => f.courseId === c.id).reduce((s, f) => s + f.minutes, 0) + (c.pastClassHours ?? 0) * 60;
     for (const t of topicLeft) {
       const take = Math.min(t.left, done);
       t.left -= take;
       done -= take;
     }
     const remaining = topicLeft.reduce((s, t) => s + t.left, 0);
-    // Work backward from the exam: how many days does this course need at a steady daily rate?
-    const dailyRate = Math.min(MAX_PER_COURSE_PER_DAY, (settings.maxHoursPerDay * 60) / 2);
-    // 30% slack for classes, other exams and review days of other courses.
-    const daysNeeded = Math.ceil((remaining / dailyRate) * 1.3);
-    let start = addDays(reviewStart, -daysNeeded);
+    // Work backward from the exam; the buffer only pulls the start date earlier.
+    const daysNeeded = startOffsetDays(remaining / 60, settings.maxHoursPerDay, settings.buffer);
+    let start = addDays(reviewStart, -(daysNeeded + (extraDays[c.id] ?? 0)));
     if (start < today || startToday) start = today;
     courseStart[c.id] = start;
     states.push({ c, examDay, reviewStart, topicLeft, remaining });

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, CalendarPlus } from "lucide-react";
+import { AlertTriangle, CheckCircle2, CalendarPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -110,9 +110,14 @@ export function ExamsSection({ data }: { data: Dashboard }) {
                     </div>
                   ))}
                 </div>
-                {st.behind && exam && (
+                {exam && st.behind && (
                   <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-destructive">
                     <AlertTriangle className="h-3.5 w-3.5" /> {d.behind}
+                  </p>
+                )}
+                {exam && !st.behind && (
+                  <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-secondary">
+                    <CheckCircle2 className="h-3.5 w-3.5" /> {d.onTrack}
                   </p>
                 )}
               </Link>

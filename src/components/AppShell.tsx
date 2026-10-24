@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArchetypeAvatar } from "@/components/ArchetypeAvatar";
+import { PingsBell } from "@/components/PingsBell";
 import { Home, BookOpen, Map, Users, MessageCircle, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { t } from "@/i18n";
@@ -59,9 +60,12 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-background">
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col border-r border-border bg-sidebar p-6 md:flex">
-        <Link to="/home" className="font-display text-2xl font-semibold text-primary">
-          {t.app.name}
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link to="/home" className="font-display text-2xl font-semibold text-primary">
+            {t.app.name}
+          </Link>
+          <PingsBell />
+        </div>
         <nav className="mt-10 flex flex-1 flex-col gap-1">
           {items.map(({ to, label, icon: Icon }) => (
             <Link
@@ -96,6 +100,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <span className="font-display text-xl font-semibold text-primary">{t.app.name}</span>
         <div className="flex items-center gap-3">
           {guestBlock && <div className="text-right [&>div]:items-end">{guestBlock}</div>}
+          <PingsBell />
           <ArchetypeAvatar archetype={me?.archetype} social={me?.social} className="h-9 w-9" />
         <button onClick={signOut} aria-label={t.nav.signOut} className="rounded-full p-2 text-muted-foreground">
           <LogOut className="h-5 w-5" strokeWidth={1.75} />
