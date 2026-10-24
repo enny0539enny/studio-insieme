@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      attendance: {
+        Row: {
+          attended: boolean
+          class_event_id: string
+          created_at: string
+          id: string
+          source: Database["public"]["Enums"]["attendance_source"]
+          user_id: string
+        }
+        Insert: {
+          attended?: boolean
+          class_event_id: string
+          created_at?: string
+          id?: string
+          source?: Database["public"]["Enums"]["attendance_source"]
+          user_id: string
+        }
+        Update: {
+          attended?: boolean
+          class_event_id?: string
+          created_at?: string
+          id?: string
+          source?: Database["public"]["Enums"]["attendance_source"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_class_event_id_fkey"
+            columns: ["class_event_id"]
+            isOneToOne: false
+            referencedRelation: "class_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       class_events: {
         Row: {
           course_id: string
@@ -42,6 +84,51 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "class_events_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_announcements: {
+        Row: {
+          author_id: string | null
+          body: string
+          course_id: string
+          created_at: string
+          id: string
+          source: Database["public"]["Enums"]["data_source"]
+          title: string
+        }
+        Insert: {
+          author_id?: string | null
+          body: string
+          course_id: string
+          created_at?: string
+          id?: string
+          source?: Database["public"]["Enums"]["data_source"]
+          title: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string
+          course_id?: string
+          created_at?: string
+          id?: string
+          source?: Database["public"]["Enums"]["data_source"]
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_announcements_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_announcements_course_id_fkey"
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "courses"
@@ -343,6 +430,53 @@ export type Database = {
           },
         ]
       }
+      planner_settings: {
+        Row: {
+          buffer_updated_courses: string[]
+          max_hours_per_day: number
+          no_study_after: string
+          personal_buffer: number
+          plan_generated_at: string | null
+          plan_mode: string
+          plan_warnings: Json
+          preferred_hours: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          buffer_updated_courses?: string[]
+          max_hours_per_day?: number
+          no_study_after?: string
+          personal_buffer?: number
+          plan_generated_at?: string | null
+          plan_mode?: string
+          plan_warnings?: Json
+          preferred_hours?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          buffer_updated_courses?: string[]
+          max_hours_per_day?: number
+          no_study_after?: string
+          personal_buffer?: number
+          plan_generated_at?: string | null
+          plan_mode?: string
+          plan_warnings?: Json
+          preferred_hours?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planner_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       privacy_settings: {
         Row: {
           discoverable_in_matching: boolean
@@ -428,6 +562,61 @@ export type Database = {
             columns: ["university_id"]
             isOneToOne: false
             referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_tests: {
+        Row: {
+          completed_at: string | null
+          course_id: string
+          created_at: string
+          due_at: string
+          id: string
+          score: number | null
+          topic_id: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          course_id: string
+          created_at?: string
+          due_at: string
+          id?: string
+          score?: number | null
+          topic_id?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          course_id?: string
+          created_at?: string
+          due_at?: string
+          id?: string
+          score?: number | null
+          topic_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_tests_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_tests_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "course_topics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_tests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -542,6 +731,63 @@ export type Database = {
           },
         ]
       }
+      study_sessions_planned: {
+        Row: {
+          actual_minutes: number | null
+          course_id: string
+          created_at: string
+          ends_at: string
+          id: string
+          is_manual: boolean
+          is_review: boolean
+          starts_at: string
+          status: Database["public"]["Enums"]["session_status"]
+          topic_ids: string[]
+          user_id: string
+        }
+        Insert: {
+          actual_minutes?: number | null
+          course_id: string
+          created_at?: string
+          ends_at: string
+          id?: string
+          is_manual?: boolean
+          is_review?: boolean
+          starts_at: string
+          status?: Database["public"]["Enums"]["session_status"]
+          topic_ids?: string[]
+          user_id: string
+        }
+        Update: {
+          actual_minutes?: number | null
+          course_id?: string
+          created_at?: string
+          ends_at?: string
+          id?: string
+          is_manual?: boolean
+          is_review?: boolean
+          starts_at?: string
+          status?: Database["public"]["Enums"]["session_status"]
+          topic_ids?: string[]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_sessions_planned_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_sessions_planned_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       universities: {
         Row: {
           city: string | null
@@ -645,11 +891,23 @@ export type Database = {
         Args: { _course_id: string; _user_id: string }
         Returns: boolean
       }
+      seed_demo_history: { Args: { _uid: string }; Returns: undefined }
+      topic_peers_this_week: {
+        Args: never
+        Returns: {
+          course_id: string
+          peers: number
+          topic_id: string
+          topic_name: string
+        }[]
+      }
     }
     Enums: {
       app_role: "student" | "teacher" | "admin"
+      attendance_source: "university" | "self"
       data_source: "university" | "student"
       enrollment_role: "student" | "teacher"
+      session_status: "planned" | "completed" | "missed"
       topic_weight: "high" | "medium" | "low"
     }
     CompositeTypes: {
@@ -779,8 +1037,10 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["student", "teacher", "admin"],
+      attendance_source: ["university", "self"],
       data_source: ["university", "student"],
       enrollment_role: ["student", "teacher"],
+      session_status: ["planned", "completed", "missed"],
       topic_weight: ["high", "medium", "low"],
     },
   },
