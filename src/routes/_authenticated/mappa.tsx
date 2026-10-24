@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate, ClientOnly } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, ClientOnly } from "@tanstack/react-router";
 import { lazy, Suspense, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -690,4 +690,3 @@ function ReportDialog({ s, onClose }: { s: LiveSession | null; onClose: () => vo
   );
 }
 
-export { Link };
