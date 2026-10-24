@@ -161,19 +161,25 @@ export type Database = {
       chats: {
         Row: {
           created_at: string
+          group_id: string | null
           id: string
+          kind: string
           ping_id: string | null
           pinned: Json
         }
         Insert: {
           created_at?: string
+          group_id?: string | null
           id?: string
+          kind?: string
           ping_id?: string | null
           pinned?: Json
         }
         Update: {
           created_at?: string
+          group_id?: string | null
           id?: string
+          kind?: string
           ping_id?: string | null
           pinned?: Json
         }
@@ -561,6 +567,156 @@ export type Database = {
           },
         ]
       }
+      group_members: {
+        Row: {
+          group_id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "study_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_session_participants: {
+        Row: {
+          session_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          session_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          session_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_session_participants_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "group_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_session_participants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_sessions: {
+        Row: {
+          chat_id: string | null
+          course_id: string | null
+          created_at: string
+          ends_at: string
+          group_id: string | null
+          id: string
+          max_participants: number
+          online: boolean
+          organizer_id: string
+          starts_at: string
+          title: string
+          venue_id: string | null
+          visibility: string
+        }
+        Insert: {
+          chat_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          ends_at: string
+          group_id?: string | null
+          id?: string
+          max_participants?: number
+          online?: boolean
+          organizer_id: string
+          starts_at: string
+          title: string
+          venue_id?: string | null
+          visibility?: string
+        }
+        Update: {
+          chat_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          ends_at?: string
+          group_id?: string | null
+          id?: string
+          max_participants?: number
+          online?: boolean
+          organizer_id?: string
+          starts_at?: string
+          title?: string
+          venue_id?: string | null
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_sessions_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_sessions_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_sessions_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "study_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_sessions_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_sessions_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       live_sessions: {
         Row: {
           activity: string
@@ -627,6 +783,62 @@ export type Database = {
             columns: ["venue_id"]
             isOneToOne: false
             referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matches: {
+        Row: {
+          chat_id: string | null
+          course_id: string | null
+          created_at: string
+          id: string
+          user_a: string
+          user_b: string
+        }
+        Insert: {
+          chat_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          user_a: string
+          user_b: string
+        }
+        Update: {
+          chat_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          user_a?: string
+          user_b?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matches_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_user_a_fkey"
+            columns: ["user_a"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_user_b_fkey"
+            columns: ["user_b"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -743,6 +955,7 @@ export type Database = {
           map_active: boolean
           map_active_allowed: boolean
           map_consent_at: string | null
+          notifications: Json
           open_to_invitations: boolean
           updated_at: string
           user_id: string
@@ -753,6 +966,7 @@ export type Database = {
           map_active?: boolean
           map_active_allowed?: boolean
           map_consent_at?: string | null
+          notifications?: Json
           open_to_invitations?: boolean
           updated_at?: string
           user_id: string
@@ -763,6 +977,7 @@ export type Database = {
           map_active?: boolean
           map_active_allowed?: boolean
           map_consent_at?: string | null
+          notifications?: Json
           open_to_invitations?: boolean
           updated_at?: string
           user_id?: string
@@ -987,6 +1202,71 @@ export type Database = {
           },
         ]
       }
+      study_groups: {
+        Row: {
+          chat_id: string | null
+          course_id: string | null
+          created_at: string
+          description: string
+          id: string
+          is_public: boolean
+          name: string
+          organizer_id: string
+          topic_id: string | null
+        }
+        Insert: {
+          chat_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          is_public?: boolean
+          name: string
+          organizer_id: string
+          topic_id?: string | null
+        }
+        Update: {
+          chat_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          is_public?: boolean
+          name?: string
+          organizer_id?: string
+          topic_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_groups_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_groups_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_groups_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_groups_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "course_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       study_sessions: {
         Row: {
           course_id: string | null
@@ -1105,6 +1385,42 @@ export type Database = {
           },
         ]
       }
+      swipes: {
+        Row: {
+          created_at: string
+          liked: boolean
+          target_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          liked: boolean
+          target_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          liked?: boolean
+          target_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "swipes_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "swipes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       universities: {
         Row: {
           city: string | null
@@ -1214,11 +1530,52 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _create_match: { Args: { _a: string; _b: string }; Returns: string }
       _create_ping_chat: { Args: { _ping_id: string }; Returns: string }
+      can_see_group: {
+        Args: { _group: string; _user: string }
+        Returns: boolean
+      }
+      can_see_session: {
+        Args: { _session: string; _user: string }
+        Returns: boolean
+      }
       cancel_ping: { Args: { _ping_id: string }; Returns: undefined }
       chat_partner_blocked: {
         Args: { _chat_id: string; _user_id: string }
         Returns: boolean
+      }
+      create_group: {
+        Args: {
+          _course: string
+          _description: string
+          _name: string
+          _public: boolean
+          _topic: string
+        }
+        Returns: string
+      }
+      demo_chat_reply: { Args: { _chat_id: string }; Returns: string }
+      get_deck: {
+        Args: never
+        Returns: {
+          archetype: string
+          candidate_id: string
+          first_name: string
+          group_size: string
+          is_demo: boolean
+          languages: string[]
+          likert: Json
+          looking_for: string
+          places: string[]
+          program_name: string
+          program_year: number
+          shared_course_ids: string[]
+          tags: string[]
+          time_slots: string[]
+          university_id: string
+          university_name: string
+        }[]
       }
       get_live_sessions: {
         Args: never
@@ -1260,6 +1617,18 @@ export type Database = {
           time_slots: string[]
         }[]
       }
+      global_search: {
+        Args: { _q: string }
+        Returns: {
+          archetype: string
+          id: string
+          is_demo: boolean
+          kind: string
+          social: number
+          subtitle: string
+          title: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1280,6 +1649,21 @@ export type Database = {
         Args: { _course_id: string; _user_id: string }
         Returns: boolean
       }
+      is_group_member: {
+        Args: { _group: string; _user: string }
+        Returns: boolean
+      }
+      join_group: { Args: { _group: string }; Returns: undefined }
+      leave_group: { Args: { _group: string }; Returns: undefined }
+      my_blocks: {
+        Args: never
+        Returns: {
+          blocked_id: string
+          created_at: string
+          first_name: string
+          is_demo: boolean
+        }[]
+      }
       my_chats: {
         Args: never
         Returns: {
@@ -1292,6 +1676,38 @@ export type Database = {
           other_is_demo: boolean
           other_social: number
           pinned: Json
+        }[]
+      }
+      my_group_sessions: {
+        Args: never
+        Returns: {
+          chat_id: string
+          course_id: string
+          ends_at: string
+          group_id: string
+          id: string
+          my_status: string
+          online: boolean
+          organizer_first_name: string
+          others: string[]
+          starts_at: string
+          title: string
+          venue_name: string
+          visibility: string
+        }[]
+      }
+      my_matches: {
+        Args: never
+        Returns: {
+          archetype: string
+          chat_id: string
+          course_name: string
+          created_at: string
+          first_name: string
+          is_demo: boolean
+          match_id: string
+          other_id: string
+          social: number
         }[]
       }
       my_pings: {
@@ -1310,13 +1726,35 @@ export type Database = {
           status: Database["public"]["Enums"]["ping_status"]
         }[]
       }
+      propose_session: {
+        Args: {
+          _chat: string
+          _course: string
+          _group: string
+          _invitee: string
+          _max: number
+          _minutes: number
+          _online: boolean
+          _starts: string
+          _title: string
+          _venue: string
+          _visibility: string
+        }
+        Returns: string
+      }
       respond_ping: {
         Args: { _accept: boolean; _ping_id: string }
         Returns: string
       }
+      respond_session: {
+        Args: { _accept: boolean; _session: string }
+        Returns: undefined
+      }
       seed_demo_history: { Args: { _uid: string }; Returns: undefined }
+      seed_social: { Args: { _uid: string }; Returns: undefined }
       send_ping: { Args: { _session_id: string }; Returns: string }
       simulate_demo_reply: { Args: { _ping_id: string }; Returns: string }
+      swipe: { Args: { _liked: boolean; _target: string }; Returns: Json }
       topic_peers_this_week: {
         Args: never
         Returns: {
@@ -1326,6 +1764,7 @@ export type Database = {
           topic_name: string
         }[]
       }
+      undo_swipe: { Args: { _target: string }; Returns: undefined }
     }
     Enums: {
       app_role: "student" | "teacher" | "admin"
