@@ -1,4 +1,4 @@
-import { t } from "@/i18n/it";
+import { t } from "@/i18n";
 
 /** Small label shown next to every demo person so they are never mistaken for real users. */
 export function DemoBadge() {

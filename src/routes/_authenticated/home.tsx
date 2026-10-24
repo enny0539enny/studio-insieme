@@ -4,7 +4,7 @@ import { CalendarDays, GraduationCap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/AppShell";
 import { DemoBadge } from "@/components/DemoBadge";
-import { t } from "@/i18n/it";
+import { t, locale } from "@/i18n";
 
 const homeQuery = queryOptions({
   queryKey: ["home"],
@@ -35,7 +35,7 @@ const homeQuery = queryOptions({
 });
 
 export const Route = createFileRoute("/_authenticated/home")({
-  head: () => ({ meta: [{ title: "Home — StudySync" }] }),
+  head: () => ({ meta: [{ title: "Home — UniMate" }] }),
   loader: ({ context }) => context.queryClient.ensureQueryData(homeQuery),
   component: HomePage,
 });
@@ -93,7 +93,7 @@ function HomePage() {
                 <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
                   <CalendarDays className="h-4 w-4" strokeWidth={1.75} />
                   {next
-                    ? `${t.home.nextExam}: ${new Date(next.exam_date).toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })}`
+                    ? `${t.home.nextExam}: ${new Date(next.exam_date).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" })}`
                     : t.home.noExam}
                   {next?.source === "student" && (
                     <span className="text-xs italic text-secondary">({t.home.addedByYou})</span>

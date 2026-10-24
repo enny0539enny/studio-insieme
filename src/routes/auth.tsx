@@ -4,15 +4,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { t } from "@/i18n/it";
+import { t } from "@/i18n";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Accedi — StudySync" },
-      { name: "description", content: "Accedi a StudySync con la tua email universitaria." },
-      { property: "og:title", content: "Accedi — StudySync" },
-      { property: "og:description", content: "Accedi a StudySync con la tua email universitaria." },
+      { title: "Sign in — UniMate" },
+      { name: "description", content: "Sign in to UniMate with your university email." },
+      { property: "og:title", content: "Sign in — UniMate" },
+      { property: "og:description", content: "Sign in to UniMate with your university email." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -85,11 +85,11 @@ function AuthPage() {
           )}
           <div className="space-y-2">
             <Label htmlFor="email">{t.auth.email}</Label>
-            <Input id="email" type="email" required placeholder="nome.cognome@mail.polimi.it" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input id="email" type="email" required placeholder="name.surname@mail.polimi.it" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">{t.auth.password}</Label>
-            <Input id="password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Input id="password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
           {error && <p className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
           {info && <p className="rounded-xl bg-secondary/10 p-3 text-sm text-secondary">{info}</p>}

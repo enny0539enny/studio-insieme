@@ -10,7 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Project rules
-- All UI strings live in `src/i18n/it.ts` (code/comments in English) so more languages can be added by mirroring its shape.
+- All UI strings live in `src/i18n/` (en.ts active, it.ts kept in sync; select via index.ts) (code/comments in English) so more languages can be added by mirroring its shape.
 - Institutional data (universities, degree_programs, courses, course_professors, course_topics, course_materials, exams, class_events) carries `source = 'university'` and is read-only for students via RLS; it will later be fed by a university integration.
 - Student-added exam dates use `exams.source = 'student'` + `created_by`, visible only to the author.
 - Roles live in `user_roles` (never on profiles). Teacher role is granted only by the signup trigger when the email is listed in `course_professors`, or by an admin.

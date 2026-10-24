@@ -3,7 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { Home, BookOpen, Map, Users, MessageCircle, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { t } from "@/i18n/it";
+import { t } from "@/i18n";
 
 const items = [
   { to: "/home", label: t.nav.home, icon: Home },
