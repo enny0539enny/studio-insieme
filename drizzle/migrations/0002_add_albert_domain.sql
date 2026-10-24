@@ -1,0 +1,1 @@
+INSERT INTO public.university_email_domains (domain, university_id) VALUES ('albert.it','00000000-0000-0000-0000-000000000001') ON CONFLICT DO NOTHING;

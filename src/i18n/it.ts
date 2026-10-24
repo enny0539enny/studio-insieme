@@ -1,7 +1,7 @@
 // All user-facing strings. Add `en.ts` with the same shape to support English.
 export const it = {
   app: {
-    name: "StudySync",
+    name: "UniMate",
     tagline: "Organizza lo studio, capisci i corsi, ripassa meglio, trova con chi studiare.",
     partner: "In collaborazione con le università partner",
   },
@@ -62,7 +62,7 @@ export const it = {
   weight: { high: "Peso alto", medium: "Peso medio", low: "Peso basso" },
   demo: "Demo",
   meta: {
-    homeDesc: "StudySync aiuta gli studenti universitari a organizzare lo studio, capire i corsi e trovare compagni di studio.",
+    homeDesc: "UniMate aiuta gli studenti universitari a organizzare lo studio, capire i corsi e trovare compagni di studio.",
   },
 } as const;
 
