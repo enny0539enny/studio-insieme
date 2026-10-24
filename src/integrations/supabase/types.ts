@@ -348,6 +348,7 @@ export type Database = {
           discoverable_in_matching: boolean
           leaderboard_opt_in: boolean
           map_active: boolean
+          map_active_allowed: boolean
           open_to_invitations: boolean
           updated_at: string
           user_id: string
@@ -356,6 +357,7 @@ export type Database = {
           discoverable_in_matching?: boolean
           leaderboard_opt_in?: boolean
           map_active?: boolean
+          map_active_allowed?: boolean
           open_to_invitations?: boolean
           updated_at?: string
           user_id: string
@@ -364,6 +366,7 @@ export type Database = {
           discoverable_in_matching?: boolean
           leaderboard_opt_in?: boolean
           map_active?: boolean
+          map_active_allowed?: boolean
           open_to_invitations?: boolean
           updated_at?: string
           user_id?: string
@@ -491,6 +494,54 @@ export type Database = {
           },
         ]
       }
+      study_sessions: {
+        Row: {
+          course_id: string | null
+          created_at: string
+          ends_at: string | null
+          id: string
+          looking_for: string | null
+          place: string
+          starts_at: string
+          user_id: string
+        }
+        Insert: {
+          course_id?: string | null
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          looking_for?: string | null
+          place: string
+          starts_at: string
+          user_id: string
+        }
+        Update: {
+          course_id?: string | null
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          looking_for?: string | null
+          place?: string
+          starts_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_sessions_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       universities: {
         Row: {
           city: string | null
@@ -564,6 +615,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_match_candidates: {
+        Args: never
+        Returns: {
+          archetype: string
+          candidate_id: string
+          first_name: string
+          is_demo: boolean
+          likert: Json
+          looking_for: string
+          next_session: Json
+          shared_course_ids: string[]
+          tags: string[]
+          time_slots: string[]
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
