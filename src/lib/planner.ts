@@ -58,7 +58,7 @@ const DINNER: Range = [19 * 60 + 30, 20 * 60 + 30];
 export function dayRules(day: Date, noStudyAfter: string, maxHoursPerDay: number) {
   const end = Math.min(parseHHMM(noStudyAfter), 23 * 60);
   const dow = day.getDay();
-  if (dow === 6) return { window: [9 * 60, Math.min(18 * 60, end)] as Range, breaks: [LUNCH], cap: Math.min(maxHoursPerDay * 60, 180), preferred: ["morning"] };
+  if (dow === 6) return { window: [9 * 60, Math.min(18 * 60, end)] as Range, breaks: [LUNCH], cap: Math.min(maxHoursPerDay * 60, 240), preferred: ["morning", "afternoon"] };
   if (dow === 0) return { window: [10 * 60, Math.min(19 * 60, end)] as Range, breaks: [LUNCH], cap: Math.min(maxHoursPerDay * 60, 180), preferred: ["morning", "afternoon"] };
   return { window: [DAY_START, Math.min(WEEKDAY_STUDY_END, end)] as Range, breaks: [LUNCH, DINNER], cap: maxHoursPerDay * 60, preferred: null };
 }
@@ -266,7 +266,22 @@ function runPlan(input: PlanInput, startToday: boolean, extraDays: Record<string
           }
         }
         if (at == null) for (const [s, e] of free) if (s >= after && e - s >= CLASS_REVIEW_MIN) { at = s; break; }
-        if (at != null) push(c.id, at, CLASS_REVIEW_MIN, cl.topicIds, "review", cl.id);
+        if (at != null) {
+          push(c.id, at, CLASS_REVIEW_MIN, cl.topicIds, "review", cl.id);
+          // Review time is study time for that course: count it against its topics.
+          const st = states.find((x) => x.c.id === c.id);
+          if (st) {
+            let need = CLASS_REVIEW_MIN;
+            const order = [...st.topicLeft.filter((x) => cl.topicIds.includes(x.id)), ...st.topicLeft];
+            for (const x of order) {
+              if (need <= 0) break;
+              const take = Math.min(Math.max(0, x.left), need);
+              x.left -= take;
+              need -= take;
+            }
+            st.remaining = st.topicLeft.reduce((acc, x) => acc + Math.max(0, x.left), 0);
+          }
+        }
       }
     }
 
