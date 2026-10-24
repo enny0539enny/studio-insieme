@@ -64,7 +64,7 @@ function Glyph({ k }: { k: ArchetypeKey | null }) {
         </g>
       );
     default:
-      return <circle cx="50" cy="44" r="12" className={cn(fill, s.className)} {...s} />;
+      return <circle cx="50" cy="44" r="12" {...s} className={cn(fill, s.className)} />;
   }
 }
 

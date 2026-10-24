@@ -95,12 +95,12 @@ export function pickMatch(me: Me, candidates: Candidate[]): Candidate | null {
 }
 
 export type MatchFacts = {
-  explainOpposite?: "theyExplain" | "youExplain";
-  bothSilent?: boolean;
-  bothPlan?: "plan" | "sprint";
-  sharedExamCourseId?: string;
-  sharedSlot?: string;
-  sharedCourseId?: string;
+  explainOpposite?: "theyExplain" | "youExplain" | undefined;
+  bothSilent?: boolean | undefined;
+  bothPlan?: "plan" | "sprint" | undefined;
+  sharedExamCourseId?: string | undefined;
+  sharedSlot?: string | undefined;
+  sharedCourseId?: string | undefined;
 };
 
 /** Collects only facts that are actually true for this pair, most relevant first. */

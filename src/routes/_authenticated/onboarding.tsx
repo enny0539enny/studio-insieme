@@ -94,15 +94,15 @@ function buildMatchLine(me: Me, c: Candidate, courseNames: Record<string, string
   if (me.lookingFor === "quiet" && f.bothSilent) phrases.push(t.match.bothSilent);
   if (me.lookingFor === "coach" && f.bothPlan) phrases.push(f.bothPlan === "plan" ? t.match.bothPlan : t.match.bothSprint);
   if (explain && !phrases.includes(explain)) phrases.push(explain);
-  if (f.sharedExamCourseId && courseNames[f.sharedExamCourseId]) phrases.push(t.match.sharedExam(courseNames[f.sharedExamCourseId]));
+  const examCourse = f.sharedExamCourseId ? courseNames[f.sharedExamCourseId] : undefined;
+  if (examCourse) phrases.push(t.match.sharedExam(examCourse));
   if (f.sharedSlot) {
     const slot = o.s3.slots[f.sharedSlot as keyof typeof o.s3.slots];
     if (slot) phrases.push(t.match.sharedSlot(slot.toLowerCase()));
   }
   const picked = phrases.slice(0, 2);
-  if (picked.length === 0 && f.sharedCourseId && courseNames[f.sharedCourseId]) {
-    picked.push(t.match.sharedCourse(courseNames[f.sharedCourseId]));
-  }
+  const anyCourse = f.sharedCourseId ? courseNames[f.sharedCourseId] : undefined;
+  if (picked.length === 0 && anyCourse) picked.push(t.match.sharedCourse(anyCourse));
   return capitalize(picked.join(", and ")) + ".";
 }
 
@@ -111,7 +111,7 @@ function OnboardingPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const storageKey = `unimate-onboarding-${ctx.uid}`;
-  const firstName = ctx.fullName.split(" ")[0] ?? "";
+  const firstName: string = ctx.fullName.split(" ")[0] ?? "";
 
   const [a, setA] = useState<Answers>({
     step: 0,
@@ -174,13 +174,13 @@ function OnboardingPage() {
       const { error } = await supabase.from("student_profiles").upsert({
         user_id: ctx.uid,
         archetype,
-        likert_answers: likert,
-        exam_scenario: a.scenario,
-        looking_for: a.lookingFor,
-        group_size: a.groupSize,
+        likert_answers: likert as unknown as Record<string, number>,
+        exam_scenario: a.scenario ?? null,
+        looking_for: a.lookingFor ?? null,
+        group_size: a.groupSize ?? null,
         places: a.places,
         time_slots: a.timeSlots,
-        living_situation: a.living,
+        living_situation: a.living ?? null,
         tags: a.tags,
         onboarding_completed: true,
         updated_at: new Date().toISOString(),
@@ -373,7 +373,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-function LikertRow({ left, right, value, onChange }: { left: string; right: string; value?: number; onChange: (v: number) => void }) {
+function LikertRow({ left, right, value, onChange }: { left: string; right: string; value?: number | undefined; onChange: (v: number) => void }) {
   return (
     <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
       <span className="text-sm leading-tight">{left}</span>
@@ -423,7 +423,7 @@ function ChoiceCard({ selected, onClick, children }: { selected: boolean; onClic
   );
 }
 
-function Segmented<K extends string>({ options, value, onChange }: { options: Record<K, string>; value?: K; onChange: (v: K) => void }) {
+function Segmented<K extends string>({ options, value, onChange }: { options: Record<K, string>; value?: K | undefined; onChange: (v: K) => void }) {
   return (
     <div className="flex flex-wrap gap-1 rounded-2xl bg-muted p-1">
       {(Object.keys(options) as K[]).map((k) => (
