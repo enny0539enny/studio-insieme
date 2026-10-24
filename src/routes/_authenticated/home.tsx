@@ -51,7 +51,7 @@ function HomePage() {
       <p className="text-sm font-medium text-secondary">
         {profile.universities?.name}
         {profile.degree_programs?.name && ` · ${profile.degree_programs.name}`}
-        {profile.program_year && ` · ${profile.program_year}° ${t.home.year}`}
+        {profile.program_year && ` · ${t.home.year} ${profile.program_year}`}
       </p>
       <h1 className="mt-2 font-display text-3xl font-semibold text-foreground md:text-4xl">
         {t.home.greeting}, {firstName}

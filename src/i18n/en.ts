@@ -53,7 +53,7 @@ export const en = {
     nextExam: "Next exam",
     noExam: "No exam scheduled",
     professor: "Professor",
-    year: "year",
+    year: "Year",
     source: "Data provided by your university",
     addedByYou: "added by you",
     empty: "No courses found for your account.",
