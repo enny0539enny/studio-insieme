@@ -101,13 +101,25 @@ function longestFree(free: Range[]): number {
   return free.reduce((m, [s, e]) => Math.max(m, e - s), 0);
 }
 
-export function generatePlan(input: {
+type PlanInput = {
   courses: PlanCourse[];
   busy: Busy[];
   fixed: FixedSession[];
   settings: PlanSettings;
   now: Date;
-}): PlanResult {
+};
+
+const missingTotal = (r: PlanResult) => Object.values(r.missingHours).reduce((a, b) => a + b, 0);
+
+/** Works backward from each exam; if that leaves hours unscheduled, retries starting every course today. */
+export function generatePlan(input: PlanInput): PlanResult {
+  const backward = runPlan(input, false);
+  if (missingTotal(backward) === 0) return backward;
+  const early = runPlan(input, true);
+  return missingTotal(early) < missingTotal(backward) ? early : backward;
+}
+
+function runPlan(input: PlanInput, startToday: boolean): PlanResult {
   const { courses, busy, fixed, settings, now } = input;
   const dayEnd = Math.min(parseHHMM(settings.noStudyAfter), 24 * 60);
   const today = startOfDay(now);
@@ -146,7 +158,7 @@ export function generatePlan(input: {
     // 30% slack for classes, other exams and review days of other courses.
     const daysNeeded = Math.ceil((remaining / dailyRate) * 1.3);
     let start = addDays(reviewStart, -daysNeeded);
-    if (start < today) start = today;
+    if (start < today || startToday) start = today;
     courseStart[c.id] = start;
     states.push({ c, examDay, reviewStart, topicLeft, remaining });
   }
