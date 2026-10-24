@@ -64,5 +64,5 @@ export const it = {
   meta: {
     homeDesc: "UniMate aiuta gli studenti universitari a organizzare lo studio, capire i corsi e trovare compagni di studio.",
   },
-} as const;
+};
 
