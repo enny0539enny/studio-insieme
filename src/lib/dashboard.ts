@@ -87,7 +87,6 @@ export const dashboardQuery = queryOptions({
       });
 
     const allSessions = (sessions.data ?? []) as DashSession[];
-    const buffer = Number(settings.data?.personal_buffer ?? 1.5);
     const reviewList = reviews.data ?? [];
     const topicNames: Record<string, string> = {};
     courses.forEach((c) => c.topics.forEach((t) => (topicNames[t.id] = t.name)));

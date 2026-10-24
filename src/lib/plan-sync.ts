@@ -60,6 +60,10 @@ export async function regeneratePlan(uid: string) {
       id: c.id,
       credits: c.credits,
       classHours: c.class_hours ?? 0,
+      pastClassHours:
+        c.class_events
+          .filter((e) => new Date(e.ends_at) <= now)
+          .reduce((m, e) => m + (new Date(e.ends_at).getTime() - new Date(e.starts_at).getTime()), 0) / 3600000,
       examAt: upcoming ?? null,
       topics: c.course_topics.map((t) => ({ id: t.id, weight: t.weight as Weight, sortOrder: t.sort_order })),
     };

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { generatePlan, parseHHMM, plannedHours, topicHours, type PlanCourse, type PlanSettings } from "./planner";
+import { generatePlan, parseHHMM, plannedHours, startOffsetDays, topicHours, type PlanCourse, type PlanSettings } from "./planner";
 
 const settings: PlanSettings = { maxHoursPerDay: 6, noStudyAfter: "23:00", buffer: 1.5, mode: "full", preferredSlots: [] };
 const now = new Date(2026, 9, 26, 7, 0); // Mon 26 Oct 2026, 07:00
@@ -17,8 +17,17 @@ const course = (id: string, examAt: Date, credits = 6, classHours = 60): PlanCou
 });
 
 describe("hours", () => {
-  it("8 CFU with 80 class hours and buffer 1.5 plans 180 hours", () =>
-    expect(plannedHours({ credits: 8, classHours: 80 }, 1.5)).toBe(180));
+  it("8 CFU with 80 class hours plans 120 hours (buffer does not inflate it)", () =>
+    expect(plannedHours({ credits: 8, classHours: 80 })).toBe(120));
+  it("start offset = remaining ÷ max per day × buffer: 60h, 6h/day, 1.5 → 15 days", () =>
+    expect(startOffsetDays(60, 6, 1.5)).toBe(15));
+  it("past class hours and completed study count as done", () => {
+    const c = { ...course("p", new Date(2027, 0, 18, 9, 0), 6, 60), pastClassHours: 40 }; // 90 − 40 = 50h left
+    const done = [{ courseId: "p", start: new Date(2026, 9, 20, 9), end: new Date(2026, 9, 20, 10), minutes: 600, topicIds: [] }];
+    const r = generatePlan({ courses: [c], busy: [], fixed: done, settings, now });
+    const h = r.sessions.filter((s) => !s.isReview).reduce((m, s) => m + (s.end.getTime() - s.start.getTime()) / 3600000, 0);
+    expect(Math.round(h)).toBe(40);
+  });
   it("splits hours 3:2:1 by weight", () => {
     const h = topicHours(course("a", now).topics, 60);
     expect([h["a-h"], h["a-m"], h["a-l"]]).toEqual([30, 20, 10]);

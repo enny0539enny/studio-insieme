@@ -214,6 +214,7 @@ export const en = {
     hours: (done: number, planned: number) => `${done} / ${planned} h studied`,
     mastery: "Mastery",
     behind: "Behind plan",
+    onTrack: "On track",
     addExam: "Add the exam date",
     addExamHint: "The plan starts once a date exists.",
     examDate: "Exam date",
