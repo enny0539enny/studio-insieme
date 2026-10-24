@@ -120,13 +120,20 @@ const missingTotal = (r: PlanResult) => Object.values(r.missingHours).reduce((a,
 
 /** Works backward from each exam; if that leaves hours unscheduled, retries starting every course today. */
 export function generatePlan(input: PlanInput): PlanResult {
-  const backward = runPlan(input, false);
-  if (missingTotal(backward) === 0) return backward;
-  const early = runPlan(input, true);
-  return missingTotal(early) < missingTotal(backward) ? early : backward;
+  // Start from the formula's date; if a course doesn't fit (classes, other courses), pull only that course earlier.
+  const extra: Record<string, number> = {};
+  let best = runPlan(input, false, extra);
+  for (let i = 0; i < 12 && missingTotal(best) > 0; i++) {
+    for (const [id, h] of Object.entries(best.missingHours)) extra[id] = (extra[id] ?? 0) + Math.max(2, Math.ceil(h / 2));
+    const next = runPlan(input, false, extra);
+    if (missingTotal(next) <= missingTotal(best)) best = next;
+  }
+  if (missingTotal(best) === 0) return best;
+  const early = runPlan(input, true, {});
+  return missingTotal(early) < missingTotal(best) ? early : best;
 }
 
-function runPlan(input: PlanInput, startToday: boolean): PlanResult {
+function runPlan(input: PlanInput, startToday: boolean, extraDays: Record<string, number>): PlanResult {
   const { courses, busy, fixed, settings, now } = input;
   const dayEnd = Math.min(parseHHMM(settings.noStudyAfter), 24 * 60);
   const today = startOfDay(now);
@@ -163,7 +170,7 @@ function runPlan(input: PlanInput, startToday: boolean): PlanResult {
     const remaining = topicLeft.reduce((s, t) => s + t.left, 0);
     // Work backward from the exam; the buffer only pulls the start date earlier.
     const daysNeeded = startOffsetDays(remaining / 60, settings.maxHoursPerDay, settings.buffer);
-    let start = addDays(reviewStart, -daysNeeded);
+    let start = addDays(reviewStart, -(daysNeeded + (extraDays[c.id] ?? 0)));
     if (start < today || startToday) start = today;
     courseStart[c.id] = start;
     states.push({ c, examDay, reviewStart, topicLeft, remaining });

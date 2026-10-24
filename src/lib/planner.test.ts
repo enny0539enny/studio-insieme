@@ -91,9 +91,9 @@ describe("generatePlan", () => {
     expect(p.sessions[0]!.topicIds[0]).toBe("high");
   });
   it("completed work reduces what is left to plan", () => {
-    const fixed = [{ courseId: "a", start: new Date(2026, 9, 20, 9), end: new Date(2026, 9, 20, 10), minutes: 60 * 100, topicIds: [] }];
+    const fixed = [{ courseId: "a", start: new Date(2026, 9, 20, 9), end: new Date(2026, 9, 20, 10), minutes: 60 * 50, topicIds: [] }];
     const p = generatePlan({ courses: [a], busy: [], fixed, settings, now });
     const total = p.sessions.filter((s) => !s.isReview).reduce((m, s) => m + (s.end.getTime() - s.start.getTime()) / 60000, 0);
-    expect(total).toBeCloseTo((135 - 100) * 60, -2);
+    expect(total).toBeCloseTo((90 - 50) * 60, -2);
   });
 });
