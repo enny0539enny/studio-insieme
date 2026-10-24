@@ -20,11 +20,11 @@ type Item = {
   start: Date;
   end: Date;
   title: string;
-  subtitle?: string;
+  subtitle?: string | undefined;
   colorIndex: number;
   draggable: boolean;
-  attended?: boolean;
-  status?: string;
+  attended?: boolean | undefined;
+  status?: string | undefined;
 };
 
 const addDays = (x: Date, n: number) => new Date(x.getFullYear(), x.getMonth(), x.getDate() + n);
