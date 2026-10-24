@@ -24,3 +24,7 @@
 - Study plan: pure generator in `src/lib/planner.ts` (tested); `src/lib/plan-sync.ts` marks missed sessions, updates personal_buffer after exams, and replaces only auto-generated `planned` rows (completed/missed/manual are kept). Runs after onboarding, on Home load when stale/missed, and after drags or settings changes.
 - Home data comes from one `dashboardQuery` (`src/lib/dashboard.ts`); mutations invalidate `["dashboard"]`.
 - Demo history for every new student/guest comes from `seed_demo_history()` called in `handle_new_user`.
+- Planner hours: planned = credits×25 − class_hours, minus completed study and past class hours; personal_buffer only moves the start date earlier (never inflates hours). Warnings are per course (`plan_warnings`).
+- Live map: other students' sessions are read only via security-definer RPC `get_live_sessions()` (first name, no coordinates of people; pins sit at venue coords, spread client-side). Home/Online sessions have no venue and never get a pin.
+- Ping to Join goes through RPCs (`send_ping`, `respond_ping`, `cancel_ping`, `simulate_demo_reply`) that enforce limits; clients never write `pings`, `chats` or `chat_members` directly. Blocks are checked with `is_blocked_between()` in every people-facing RPC.
+- Leaflet code lives in `src/components/map/LiveMap.tsx`, loaded with React.lazy behind ClientOnly; markercluster needs `window.L` set before its dynamic import.
