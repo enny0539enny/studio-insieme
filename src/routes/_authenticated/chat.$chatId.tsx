@@ -1,15 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Clock, MapPin, Send } from "lucide-react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, CalendarPlus, Clock, MapPin } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { ArchetypeAvatar } from "@/components/ArchetypeAvatar";
 import { DemoBadge } from "@/components/DemoBadge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { supabase } from "@/integrations/supabase/client";
+import { ChatThread } from "@/components/chat/ChatThread";
+import { ProposeSessionDialog } from "@/components/people/ProposeSessionDialog";
 import { t, locale } from "@/i18n";
-import { cn } from "@/lib/utils";
 import { chatsQuery } from "./chat.index";
 
 export const Route = createFileRoute("/_authenticated/chat/$chatId")({
@@ -30,36 +29,11 @@ const time = (iso: string) => new Date(iso).toLocaleTimeString(locale, { hour: "
 
 function ChatPage() {
   const { chatId } = Route.useParams();
-  const qc = useQueryClient();
-  const [text, setText] = useState("");
-  const bottom = useRef<HTMLDivElement>(null);
+  const [propose, setPropose] = useState(false);
   const { data: chats = [] } = useQuery(chatsQuery);
   const chat = chats.find((c) => c.chat_id === chatId);
-  const { data: msgs = [] } = useQuery({
-    queryKey: ["chat", chatId],
-    queryFn: async () => {
-      const [{ data: u }, { data }] = await Promise.all([
-        supabase.auth.getUser(),
-        supabase.from("chat_messages").select("id, sender_id, body, created_at").eq("chat_id", chatId).order("created_at"),
-      ]);
-      return (data ?? []).map((x) => ({ ...x, mine: x.sender_id === u.user?.id }));
-    },
-    refetchInterval: 4000,
-  });
-  useEffect(() => bottom.current?.scrollIntoView({ block: "end" }), [msgs.length]);
+  const p = chat?.pinned as (typeof chat extends undefined ? never : NonNullable<typeof chat>["pinned"]) & { match?: boolean; course?: string };
 
-  async function send(e: React.FormEvent) {
-    e.preventDefault();
-    const body = text.trim().slice(0, 2000);
-    if (!body) return;
-    const { data: u } = await supabase.auth.getUser();
-    setText("");
-    await supabase.from("chat_messages").insert({ chat_id: chatId, sender_id: u.user!.id, body });
-    qc.invalidateQueries({ queryKey: ["chat", chatId] });
-    qc.invalidateQueries({ queryKey: ["chats"] });
-  }
-
-  const p = chat?.pinned;
   return (
     <AppShell>
       <Link to="/chat" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
@@ -68,7 +42,15 @@ function ChatPage() {
       {chat && (
         <div className="mt-4 flex items-center gap-3">
           <ArchetypeAvatar archetype={chat.other_archetype} social={chat.other_social ?? undefined} className="h-12 w-12" />
-          <p className="flex items-center gap-2 text-xl font-semibold">{chat.other_first_name} {chat.other_is_demo && <DemoBadge />}</p>
+          <div className="min-w-0 flex-1">
+            <p className="flex items-center gap-2 text-xl font-semibold">
+              {chat.other_first_name} {chat.other_is_demo && <DemoBadge />}
+            </p>
+            {p?.course && <p className="text-xs font-medium text-primary">{t.people.celebration.course(p.course)}</p>}
+          </div>
+          <Button size="sm" variant="secondary" onClick={() => setPropose(true)}>
+            <CalendarPlus className="h-4 w-4" /> <span className="hidden sm:inline">{t.people.propose.title}</span>
+          </Button>
         </div>
       )}
       {p?.subject && (
@@ -81,19 +63,8 @@ function ChatPage() {
           </p>
         </div>
       )}
-      <div className="mt-4 flex flex-col gap-2">
-        {msgs.map((x) => (
-          <div key={x.id} className={cn("max-w-[80%] rounded-2xl px-4 py-2 text-sm", x.mine ? "self-end bg-primary text-primary-foreground" : "self-start bg-card border border-border")}>
-            {x.body}
-            <span className={cn("ml-2 text-[10px]", x.mine ? "text-primary-foreground/70" : "text-muted-foreground")}>{time(x.created_at)}</span>
-          </div>
-        ))}
-        <div ref={bottom} />
-      </div>
-      <form onSubmit={send} className="sticky bottom-24 mt-4 flex gap-2 md:bottom-4">
-        <Input value={text} onChange={(e) => setText(e.target.value)} placeholder={t.chats.placeholder} maxLength={2000} className="bg-card" />
-        <Button type="submit" aria-label={t.chats.send}><Send className="h-4 w-4" /></Button>
-      </form>
+      <ChatThread chatId={chatId} />
+      <ProposeSessionDialog open={propose} onOpenChange={setPropose} chatId={chatId} inviteeId={chat?.other_id} />
     </AppShell>
   );
 }
