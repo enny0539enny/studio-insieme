@@ -1,14 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarClock, Layers, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { t } from "@/i18n/it";
+import { t } from "@/i18n";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "StudySync — Studia meglio, insieme" },
+      { title: "UniMate — Study better, together" },
       { name: "description", content: t.meta.homeDesc },
-      { property: "og:title", content: "StudySync — Studia meglio, insieme" },
+      { property: "og:title", content: "UniMate — Study better, together" },
       { property: "og:description", content: t.meta.homeDesc },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

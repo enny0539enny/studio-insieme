@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Map } from "lucide-react";
 import { PlaceholderPage } from "@/components/AppShell";
-import { t } from "@/i18n/it";
+import { t } from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/mappa")({
-  head: () => ({ meta: [{ title: `${t.nav.mappa} — StudySync` }] }),
+  head: () => ({ meta: [{ title: `${t.nav.mappa} — UniMate` }] }),
   component: () => <PlaceholderPage title={t.nav.mappa} text={t.placeholder.mappa} icon={Map} />,
 });

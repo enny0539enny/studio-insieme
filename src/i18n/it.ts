@@ -66,4 +66,3 @@ export const it = {
   },
 } as const;
 
-export const t = it;
