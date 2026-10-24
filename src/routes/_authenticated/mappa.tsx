@@ -387,7 +387,7 @@ function FilterBar({ filters, setFilters, courses, live, subjectLabel }: {
 }
 
 function PinCard({ s, venue, pings, onClose, onReport, onOpenChat }: {
-  s: LiveSession; venue?: Venue; pings: import("@/lib/live").Ping[]; onClose: () => void; onReport: () => void; onOpenChat: (id: string) => void;
+  s: LiveSession; venue?: Venue | undefined; pings: import("@/lib/live").Ping[]; onClose: () => void; onReport: () => void; onOpenChat: (id: string) => void;
 }) {
   const qc = useQueryClient();
   const [busy, setBusy] = useState(false);
@@ -398,7 +398,7 @@ function PinCard({ s, venue, pings, onClose, onReport, onOpenChat }: {
     setBusy(true);
     const { data: id, error } = await supabase.rpc("send_ping", { _session_id: s.session_id });
     setBusy(false);
-    if (error) return toast.error(m.errors[pingErrorKey(error)]);
+    if (error) { toast.error(m.errors[pingErrorKey(error)]); return; }
     toast.success(m.pingSent(s.first_name));
     await qc.invalidateQueries({ queryKey: ["pings"] });
     if (s.is_demo && id) {
@@ -556,7 +556,7 @@ function StartDialog({ open, onOpenChange, courses, venues, openDefault, uid, on
     });
     if (!error) await supabase.from("privacy_settings").update({ map_active: true, open_to_invitations: openInv }).eq("user_id", uid);
     setBusy(false);
-    if (error) return toast.error(m.errors.generic);
+    if (error) { toast.error(m.errors["generic"]); return; }
     onStarted();
   }
 
@@ -642,7 +642,7 @@ function SuggestDialog({ open, onOpenChange, center, onDone }: {
   async function send() {
     const { data: u } = await supabase.auth.getUser();
     const { error } = await supabase.from("venues").insert({ name: name.trim().slice(0, 80), type, lat: center.lat, lng: center.lng, suggested_by: u.user!.id, approved: false });
-    if (error) return toast.error(m.errors.generic);
+    if (error) { toast.error(m.errors["generic"]); return; }
     toast.success(m.suggestDone);
     setName("");
     onDone();
@@ -673,7 +673,7 @@ function ReportDialog({ s, onClose }: { s: LiveSession | null; onClose: () => vo
     if (!s) return;
     const { data: u } = await supabase.auth.getUser();
     const { error } = await supabase.from("reports").insert({ reporter_id: u.user!.id, reported_id: s.user_id, reason: reason.trim().slice(0, 500) });
-    if (error) return toast.error(m.errors.generic);
+    if (error) { toast.error(m.errors["generic"]); return; }
     toast.success(m.reportDone);
     setReason("");
     onClose();
