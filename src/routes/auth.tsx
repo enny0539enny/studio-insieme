@@ -37,29 +37,27 @@ function AuthPage() {
     setInfo(null);
     setLoading(true);
     try {
-      const domain = email.trim().toLowerCase().split("@")[1] ?? "";
-      const { data: domains } = await supabase.from("university_email_domains").select("domain");
-      const allowed = (domains ?? []).map((d) => d.domain);
-      if (!allowed.includes(domain)) {
-        setError(`${t.auth.domainNotAllowed} ${allowed.map((d) => "@" + d).join(", ")}`);
-        return;
-      }
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+      // Any email works: sign in, or create the account on the spot if it doesn't exist yet.
+      let { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        const up = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/home`, data: { full_name: fullName } },
+          options: { emailRedirectTo: `${window.location.origin}/onboarding`, data: { full_name: fullName || email.split("@")[0] } },
         });
-        if (error) throw error;
-        setInfo(t.auth.checkEmail);
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (up.error) {
+          setError(t.auth.invalidCredentials);
+          return;
+        }
+        if (!up.data.session) ({ error } = await supabase.auth.signInWithPassword({ email, password }));
+        else error = null;
         if (error) {
           setError(t.auth.invalidCredentials);
           return;
         }
-        navigate({ to: "/home" });
       }
+      // Every sign-in starts from the onboarding.
+      navigate({ to: "/onboarding" });
     } catch {
       setError(t.auth.genericError);
     } finally {
@@ -94,7 +92,7 @@ function AuthPage() {
           )}
           <div className="space-y-2">
             <Label htmlFor="email">{t.auth.email}</Label>
-            <Input id="email" type="email" required placeholder="name.surname@mail.polimi.it" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input id="email" type="email" required placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">{t.auth.password}</Label>
