@@ -18,10 +18,12 @@ import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/h
 import { Route as AuthenticatedMappaRouteImport } from './routes/_authenticated/mappa'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedPersoneRouteImport } from './routes/_authenticated/persone'
+import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
 import { Route as AuthenticatedStudioRouteImport } from './routes/_authenticated/studio'
 import { Route as AuthenticatedChatIndexRouteImport } from './routes/_authenticated/chat.index'
 import { Route as AuthenticatedChatChatIdRouteImport } from './routes/_authenticated/chat.$chatId'
 import { Route as AuthenticatedCourseCourseIdRouteImport } from './routes/_authenticated/course.$courseId'
+import { Route as AuthenticatedGroupsGroupIdRouteImport } from './routes/_authenticated/groups.$groupId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -67,6 +69,11 @@ const AuthenticatedPersoneRoute = AuthenticatedPersoneRouteImport.update({
   path: '/persone',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSearchRoute = AuthenticatedSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedStudioRoute = AuthenticatedStudioRouteImport.update({
   id: '/studio',
   path: '/studio',
@@ -88,6 +95,12 @@ const AuthenticatedCourseCourseIdRoute =
     path: '/course/$courseId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedGroupsGroupIdRoute =
+  AuthenticatedGroupsGroupIdRouteImport.update({
+    id: '/groups/$groupId',
+    path: '/groups/$groupId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -98,9 +111,11 @@ export interface FileRoutesByFullPath {
   '/mappa': typeof AuthenticatedMappaRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/persone': typeof AuthenticatedPersoneRoute
+  '/search': typeof AuthenticatedSearchRoute
   '/studio': typeof AuthenticatedStudioRoute
   '/chat/$chatId': typeof AuthenticatedChatChatIdRoute
   '/course/$courseId': typeof AuthenticatedCourseCourseIdRoute
+  '/groups/$groupId': typeof AuthenticatedGroupsGroupIdRoute
   '/chat/': typeof AuthenticatedChatIndexRoute
 }
 export interface FileRoutesByTo {
@@ -112,9 +127,11 @@ export interface FileRoutesByTo {
   '/mappa': typeof AuthenticatedMappaRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/persone': typeof AuthenticatedPersoneRoute
+  '/search': typeof AuthenticatedSearchRoute
   '/studio': typeof AuthenticatedStudioRoute
   '/chat/$chatId': typeof AuthenticatedChatChatIdRoute
   '/course/$courseId': typeof AuthenticatedCourseCourseIdRoute
+  '/groups/$groupId': typeof AuthenticatedGroupsGroupIdRoute
   '/chat': typeof AuthenticatedChatIndexRoute
 }
 export interface FileRoutesById {
@@ -128,9 +145,11 @@ export interface FileRoutesById {
   '/_authenticated/mappa': typeof AuthenticatedMappaRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/persone': typeof AuthenticatedPersoneRoute
+  '/_authenticated/search': typeof AuthenticatedSearchRoute
   '/_authenticated/studio': typeof AuthenticatedStudioRoute
   '/_authenticated/chat/$chatId': typeof AuthenticatedChatChatIdRoute
   '/_authenticated/course/$courseId': typeof AuthenticatedCourseCourseIdRoute
+  '/_authenticated/groups/$groupId': typeof AuthenticatedGroupsGroupIdRoute
   '/_authenticated/chat/': typeof AuthenticatedChatIndexRoute
 }
 export interface FileRouteTypes {
@@ -144,9 +163,11 @@ export interface FileRouteTypes {
     | '/mappa'
     | '/onboarding'
     | '/persone'
+    | '/search'
     | '/studio'
     | '/chat/$chatId'
     | '/course/$courseId'
+    | '/groups/$groupId'
     | '/chat/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -158,9 +179,11 @@ export interface FileRouteTypes {
     | '/mappa'
     | '/onboarding'
     | '/persone'
+    | '/search'
     | '/studio'
     | '/chat/$chatId'
     | '/course/$courseId'
+    | '/groups/$groupId'
     | '/chat'
   id:
     | '__root__'
@@ -173,9 +196,11 @@ export interface FileRouteTypes {
     | '/_authenticated/mappa'
     | '/_authenticated/onboarding'
     | '/_authenticated/persone'
+    | '/_authenticated/search'
     | '/_authenticated/studio'
     | '/_authenticated/chat/$chatId'
     | '/_authenticated/course/$courseId'
+    | '/_authenticated/groups/$groupId'
     | '/_authenticated/chat/'
   fileRoutesById: FileRoutesById
 }
@@ -250,6 +275,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPersoneRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/search': {
+      id: '/_authenticated/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof AuthenticatedSearchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/studio': {
       id: '/_authenticated/studio'
       path: '/studio'
@@ -278,6 +310,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCourseCourseIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/groups/$groupId': {
+      id: '/_authenticated/groups/$groupId'
+      path: '/groups/$groupId'
+      fullPath: '/groups/$groupId'
+      preLoaderRoute: typeof AuthenticatedGroupsGroupIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -288,9 +327,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMappaRoute: typeof AuthenticatedMappaRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPersoneRoute: typeof AuthenticatedPersoneRoute
+  AuthenticatedSearchRoute: typeof AuthenticatedSearchRoute
   AuthenticatedStudioRoute: typeof AuthenticatedStudioRoute
   AuthenticatedChatChatIdRoute: typeof AuthenticatedChatChatIdRoute
   AuthenticatedCourseCourseIdRoute: typeof AuthenticatedCourseCourseIdRoute
+  AuthenticatedGroupsGroupIdRoute: typeof AuthenticatedGroupsGroupIdRoute
   AuthenticatedChatIndexRoute: typeof AuthenticatedChatIndexRoute
 }
 
@@ -301,9 +342,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMappaRoute: AuthenticatedMappaRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPersoneRoute: AuthenticatedPersoneRoute,
+  AuthenticatedSearchRoute: AuthenticatedSearchRoute,
   AuthenticatedStudioRoute: AuthenticatedStudioRoute,
   AuthenticatedChatChatIdRoute: AuthenticatedChatChatIdRoute,
   AuthenticatedCourseCourseIdRoute: AuthenticatedCourseCourseIdRoute,
+  AuthenticatedGroupsGroupIdRoute: AuthenticatedGroupsGroupIdRoute,
   AuthenticatedChatIndexRoute: AuthenticatedChatIndexRoute,
 }
 
