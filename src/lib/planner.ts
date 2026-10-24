@@ -305,6 +305,15 @@ function runPlan(input: PlanInput, startToday: boolean, extraDays: Record<string
         if (len < MIN_SESSION) break;
         const high = s.c.topics.filter((t) => t.weight === "high").map((t) => t.id);
         if (!place(s.c.id, len, high.length ? high : s.c.topics.map((t) => t.id), true)) break;
+        // Exam-review time counts toward the course's hours.
+        let need = len;
+        for (const x of s.topicLeft) {
+          if (need <= 0) break;
+          const take = Math.min(Math.max(0, x.left), need);
+          x.left -= take;
+          need -= take;
+        }
+        s.remaining = s.topicLeft.reduce((acc, x) => acc + Math.max(0, x.left), 0);
         i++;
       }
       continue;
