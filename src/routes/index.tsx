@@ -44,7 +44,7 @@ function Landing() {
         </div>
         <div className="mt-20 grid gap-4 md:grid-cols-3">
           {t.landing.features.map((f, i) => {
-            const Icon = icons[i];
+            const Icon = icons[i] ?? Layers;
             return (
               <div key={f.title} className="rounded-3xl border border-border bg-card p-7 shadow-soft">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
