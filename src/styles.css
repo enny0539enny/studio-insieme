@@ -63,6 +63,13 @@
   --font-display: "Fraunces", Georgia, serif;
   --shadow-soft: var(--shadow-soft);
   --color-avatar-warm: var(--avatar-warm);
+  --color-course-1: var(--course-1);
+  --color-course-2: var(--course-2);
+  --color-course-3: var(--course-3);
+  --color-course-4: var(--course-4);
+  --color-course-5: var(--course-5);
+  --color-exam: var(--exam);
+  --color-class: var(--class);
   --color-avatar-cool: var(--avatar-cool);
   --color-avatar-sand: var(--avatar-sand);
   --color-avatar-ink: var(--avatar-ink);
@@ -122,6 +129,13 @@
   --sidebar-accent-foreground: oklch(0.42 0.1 35);
   --sidebar-border: oklch(0.89 0.025 75);
   --sidebar-ring: oklch(0.68 0.16 35);
+  --course-1: oklch(0.68 0.16 35);
+  --course-2: oklch(0.55 0.09 190);
+  --course-3: oklch(0.72 0.13 85);
+  --course-4: oklch(0.58 0.12 150);
+  --course-5: oklch(0.6 0.12 300);
+  --exam: oklch(0.55 0.2 25);
+  --class: oklch(0.88 0.01 70);
   --avatar-warm: oklch(0.74 0.14 42);
   --avatar-cool: oklch(0.62 0.08 200);
   --avatar-sand: oklch(0.86 0.05 80);
