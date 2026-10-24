@@ -57,6 +57,13 @@
       "when": 1792855285716,
       "tag": "0007_allow_any_email_domain",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792855408395,
+      "tag": "0008_session_kind_class_review",
+      "breakpoints": true
     }
   ]
 }

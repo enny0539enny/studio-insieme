@@ -21,7 +21,7 @@ import {
 } from "@/lib/archetype";
 import { t, locale } from "@/i18n";
 import { cn } from "@/lib/utils";
-import { regeneratePlan } from "@/lib/plan-sync";
+import { regeneratePlan } from "@/lib/plan-client";
 
 const o = t.onboarding;
 

@@ -4,8 +4,9 @@ import { toast } from "sonner";
 import { Check, ChevronLeft, ChevronRight, GraduationCap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { regeneratePlan } from "@/lib/plan-sync";
-import { COURSE_BG, startOfWeek, type Dashboard } from "@/lib/dashboard";
+import { regeneratePlan } from "@/lib/plan-client";
+import { COURSE_BG, COURSE_BORDER, COURSE_SOFT, startOfWeek, type Dashboard } from "@/lib/dashboard";
+import { SessionDetail, type DetailTarget } from "./SessionDetail";
 import { t, locale } from "@/i18n";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +26,7 @@ type Item = {
   draggable: boolean;
   attended?: boolean | undefined;
   status?: string | undefined;
+  sessionKind?: string | undefined;
 };
 
 const addDays = (x: Date, n: number) => new Date(x.getFullYear(), x.getMonth(), x.getDate() + n);
@@ -36,6 +38,8 @@ export function CalendarSection({ data }: { data: Dashboard }) {
   const [view, setView] = useState<"week" | "month">("week");
   const [anchor, setAnchor] = useState(() => new Date());
   const [busy, setBusy] = useState(false);
+  const [detail, setDetail] = useState<DetailTarget>(null);
+  const open = (it: Item) => it.kind !== "exam" && setDetail({ kind: it.kind === "class" ? "class" : "session", id: it.id });
   const drag = useRef<{ id: string; offsetMin: number; durMin: number } | null>(null);
 
   const items = useMemo<Item[]>(() => {
@@ -74,7 +78,8 @@ export function CalendarSection({ data }: { data: Dashboard }) {
         kind: "session",
         start: new Date(s.starts_at),
         end: new Date(s.ends_at),
-        title: c?.name ?? "",
+        title: s.kind === "review" ? `${d.review} · ${c?.name ?? ""}` : (c?.name ?? ""),
+        sessionKind: s.kind,
         subtitle: s.topic_ids.map((id) => data.topicNames[id]).filter(Boolean).join(", "),
         colorIndex: c?.colorIndex ?? 0,
         draggable: s.status === "planned" && new Date(s.starts_at) > now,
@@ -120,7 +125,9 @@ export function CalendarSection({ data }: { data: Dashboard }) {
       "overflow-hidden rounded-lg px-2 py-1 text-[11px] leading-tight",
       it.kind === "class" && "bg-class text-foreground",
       it.kind === "exam" && "bg-exam font-semibold text-primary-foreground ring-2 ring-exam/30",
-      it.kind === "session" && cn(COURSE_BG[it.colorIndex], "text-primary-foreground", it.status === "completed" && "opacity-60"),
+      it.kind === "session" && it.sessionKind !== "review" && cn(COURSE_BG[it.colorIndex], "text-primary-foreground", it.status === "completed" && "opacity-60"),
+      it.kind === "session" && it.sessionKind === "review" && cn(COURSE_SOFT[it.colorIndex], COURSE_BORDER[it.colorIndex], "border-l-4 text-foreground", it.status === "completed" && "opacity-60"),
+      it.kind !== "exam" && "cursor-pointer",
       it.draggable && "cursor-grab active:cursor-grabbing",
     );
 
@@ -206,7 +213,8 @@ export function CalendarSection({ data }: { data: Dashboard }) {
                             const rect = e.currentTarget.getBoundingClientRect();
                             drag.current = { id: it.id, durMin, offsetMin: ((e.clientY - rect.top) / HOUR_PX) * 60 };
                           }}
-                          onClick={() => toggleAttended(it)}
+                          onClick={() => open(it)}
+                          data-kind={it.sessionKind ?? it.kind}
                           title={`${it.title}${it.subtitle ? ` · ${it.subtitle}` : ""}${it.kind === "class" ? ` · ${it.attended ? d.attended : d.markAttended}` : ""}`}
                           className={cn("absolute inset-x-0.5", blockClass(it), it.kind === "class" && "cursor-pointer")}
                           style={{ top: Math.max(0, top), height }}
@@ -242,10 +250,11 @@ export function CalendarSection({ data }: { data: Dashboard }) {
                 {list.length === 0 && <p className="text-sm text-muted-foreground">{d.noItems}</p>}
                 {list.map((it) => (
                   <div key={it.kind + it.id} className="flex items-center gap-3 rounded-xl bg-card p-2.5 shadow-soft">
+                    <button type="button" onClick={() => open(it)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
                     <span
                       className={cn(
                         "h-9 w-1.5 shrink-0 rounded-full",
-                        it.kind === "class" ? "bg-class" : it.kind === "exam" ? "bg-exam" : COURSE_BG[it.colorIndex],
+                        it.kind === "class" ? "bg-class" : it.kind === "exam" ? "bg-exam" : it.sessionKind === "review" ? COURSE_SOFT[it.colorIndex] : COURSE_BG[it.colorIndex],
                       )}
                     />
                     <div className="min-w-0 flex-1">
@@ -257,6 +266,7 @@ export function CalendarSection({ data }: { data: Dashboard }) {
                         {hm(it.start)}–{hm(it.end)} {it.subtitle && `· ${it.subtitle}`}
                       </p>
                     </div>
+                    </button>
                     {it.kind === "class" && (
                       <button
                         onClick={() => toggleAttended(it)}
@@ -275,6 +285,7 @@ export function CalendarSection({ data }: { data: Dashboard }) {
           );
         })}
       </div>
+      <SessionDetail data={data} target={detail} onClose={() => setDetail(null)} />
     </section>
   );
 }

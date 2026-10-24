@@ -1038,12 +1038,14 @@ export type Database = {
       study_sessions_planned: {
         Row: {
           actual_minutes: number | null
+          class_event_id: string | null
           course_id: string
           created_at: string
           ends_at: string
           id: string
           is_manual: boolean
           is_review: boolean
+          kind: string
           starts_at: string
           status: Database["public"]["Enums"]["session_status"]
           topic_ids: string[]
@@ -1051,12 +1053,14 @@ export type Database = {
         }
         Insert: {
           actual_minutes?: number | null
+          class_event_id?: string | null
           course_id: string
           created_at?: string
           ends_at: string
           id?: string
           is_manual?: boolean
           is_review?: boolean
+          kind?: string
           starts_at: string
           status?: Database["public"]["Enums"]["session_status"]
           topic_ids?: string[]
@@ -1064,18 +1068,27 @@ export type Database = {
         }
         Update: {
           actual_minutes?: number | null
+          class_event_id?: string | null
           course_id?: string
           created_at?: string
           ends_at?: string
           id?: string
           is_manual?: boolean
           is_review?: boolean
+          kind?: string
           starts_at?: string
           status?: Database["public"]["Enums"]["session_status"]
           topic_ids?: string[]
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "study_sessions_planned_class_event_id_fkey"
+            columns: ["class_event_id"]
+            isOneToOne: false
+            referencedRelation: "class_events"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "study_sessions_planned_course_id_fkey"
             columns: ["course_id"]

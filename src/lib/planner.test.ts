@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { generatePlan, parseHHMM, plannedHours, startOffsetDays, topicHours, type PlanCourse, type PlanSettings } from "./planner";
+import { classTopics, generatePlan, parseHHMM, plannedHours, startOffsetDays, topicHours, type PlanCourse, type PlanSettings } from "./planner";
 
 const settings: PlanSettings = { maxHoursPerDay: 6, noStudyAfter: "23:00", buffer: 1.5, mode: "full", preferredSlots: [] };
 const now = new Date(2026, 9, 26, 7, 0); // Mon 26 Oct 2026, 07:00
@@ -97,3 +97,74 @@ describe("generatePlan", () => {
     expect(total).toBeCloseTo((90 - 50) * 60, -2);
   });
 });
+
+describe("realistic timetable", () => {
+  const exam = new Date(2027, 0, 25, 9, 0);
+  const c = course("x", exam, 12, 0);
+  const y = course("y", new Date(2027, 1, 1, 9, 0), 12, 0);
+  // Monday 26 Oct 2026, class 08:30–10:30 and 10:30–12:30 (back to back), and one 14:15–16:15.
+  const cls = [
+    { id: "c1", start: new Date(2026, 9, 26, 8, 30), end: new Date(2026, 9, 26, 10, 30), topicIds: ["x-h"] },
+    { id: "c2", start: new Date(2026, 9, 26, 10, 30), end: new Date(2026, 9, 26, 12, 30), topicIds: ["x-m"] },
+    { id: "c3", start: new Date(2026, 9, 26, 14, 15), end: new Date(2026, 9, 26, 16, 15), topicIds: ["x-l"] },
+  ];
+  c.classes = cls;
+  const p = generatePlan({ courses: [c, y], busy: cls.map((k) => ({ start: k.start, end: k.end })), fixed: [], settings, now });
+  const min = (x: Date) => x.getHours() * 60 + x.getMinutes();
+  const dur = (s: { start: Date; end: Date }) => (s.end.getTime() - s.start.getTime()) / 60000;
+
+  it("nothing before 08:00 or after 23:00", () => {
+    for (const s of p.sessions) {
+      expect(min(s.start)).toBeGreaterThanOrEqual(480);
+      expect(min(s.end)).toBeLessThanOrEqual(1380);
+    }
+  });
+  it("Saturday only 09:00–18:00", () => {
+    for (const s of p.sessions.filter((s) => s.start.getDay() === 6)) {
+      expect(min(s.start)).toBeGreaterThanOrEqual(540);
+      expect(min(s.end)).toBeLessThanOrEqual(1080);
+    }
+  });
+  it("Sunday at most 3 hours, 10:00–19:00", () => {
+    const perDay: Record<string, number> = {};
+    for (const s of p.sessions.filter((s) => s.start.getDay() === 0)) {
+      expect(min(s.start)).toBeGreaterThanOrEqual(600);
+      expect(min(s.end)).toBeLessThanOrEqual(1140);
+      perDay[s.start.toDateString()] = (perDay[s.start.toDateString()] ?? 0) + dur(s);
+    }
+    for (const v of Object.values(perDay)) expect(v).toBeLessThanOrEqual(180);
+  });
+  it("weekdays keep lunch 13–14 and dinner 19:30–20:30 free", () => {
+    for (const s of p.sessions.filter((s) => s.start.getDay() >= 1 && s.start.getDay() <= 5)) {
+      expect(min(s.end) <= 780 || min(s.start) >= 840).toBe(true);
+      expect(min(s.end) <= 1170 || min(s.start) >= 1230).toBe(true);
+    }
+  });
+  it("at least 15 minutes between sessions", () => {
+    const sorted = [...p.sessions].sort((a, b) => a.start.getTime() - b.start.getTime());
+    for (let i = 1; i < sorted.length; i++)
+      if (sameDate(sorted[i]!.start, sorted[i - 1]!.start)) expect(sorted[i]!.start.getTime() - sorted[i - 1]!.end.getTime()).toBeGreaterThanOrEqual(15 * 60000);
+  });
+  it("every class gets a 20–30 min review the same day covering its topics", () => {
+    for (const k of cls) {
+      const r = p.sessions.find((s) => s.classEventId === k.id)!;
+      expect(r.kind).toBe("review");
+      expect(dur(r)).toBeGreaterThanOrEqual(20);
+      expect(dur(r)).toBeLessThanOrEqual(30);
+      expect(r.start.toDateString()).toBe(k.start.toDateString());
+      expect(r.topicIds).toEqual(k.topicIds);
+    }
+  });
+  it("review starts right after class + 15 min travel when free, else in the evening", () => {
+    expect(min(p.sessions.find((s) => s.classEventId === "c3")!.start)).toBe(16 * 60 + 30);
+    expect(min(p.sessions.find((s) => s.classEventId === "c1")!.start)).toBeGreaterThanOrEqual(1230);
+  });
+  it("classes map to topics in order across the semester", () => {
+    const m = classTopics(
+      [0, 1, 2, 3].map((i) => ({ id: `k${i}`, start: new Date(2026, 9, 1 + i) })),
+      [{ id: "a", weight: "high", sortOrder: 1 }, { id: "b", weight: "low", sortOrder: 2 }],
+    );
+    expect(m).toEqual({ k0: ["a"], k1: ["a"], k2: ["b"], k3: ["b"] });
+  });
+});
+const sameDate = (a: Date, b: Date) => a.toDateString() === b.toDateString();

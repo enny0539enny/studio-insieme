@@ -10,12 +10,14 @@ export type PlanCourse = {
   classHours: number;
   /** Hours of class events already held this semester; counted as done. */
   pastClassHours?: number;
+  /** Class events of this course; each gets a short same-day review session. */
+  classes?: PlanClass[];
   examAt: Date | null;
   topics: PlanTopic[];
 };
 export type Busy = { start: Date; end: Date };
 /** Sessions the generator must keep: completed ones and manually placed ones. */
-export type FixedSession = { courseId: string; start: Date; end: Date; minutes: number; topicIds: string[] };
+export type FixedSession = { courseId: string; start: Date; end: Date; minutes: number; topicIds: string[]; classEventId?: string | null };
 export type PlanSettings = {
   maxHoursPerDay: number;
   noStudyAfter: string; // "HH:MM"
@@ -23,7 +25,17 @@ export type PlanSettings = {
   mode: "full" | "reduced";
   preferredSlots: string[]; // morning | afternoon | evening | night
 };
-export type GeneratedSession = { courseId: string; topicIds: string[]; start: Date; end: Date; isReview: boolean };
+export type PlanClass = { id: string; start: Date; end: Date; topicIds: string[] };
+export type SessionKind = "study" | "review" | "exam_review";
+export type GeneratedSession = {
+  courseId: string;
+  topicIds: string[];
+  start: Date;
+  end: Date;
+  isReview: boolean;
+  kind: SessionKind;
+  classEventId?: string;
+};
 export type PlanResult = {
   sessions: GeneratedSession[];
   /** Hours that could not be scheduled before the review window, per course. */
@@ -34,7 +46,41 @@ export type PlanResult = {
 export const MIN_SESSION = 25;
 export const MAX_SESSION = 90;
 const BREAK = 15;
+type Range = [number, number];
 const DAY_START = 8 * 60;
+const TRAVEL = 15;
+export const CLASS_REVIEW_MIN = 25;
+const WEEKDAY_STUDY_END = 22 * 60 + 30;
+const LUNCH: Range = [13 * 60, 14 * 60];
+const DINNER: Range = [19 * 60 + 30, 20 * 60 + 30];
+
+/** Daily study window, breaks and cap. Sat 09–18, Sun 10–19 (max 3 h), weekdays 08–22:30 with lunch and dinner. */
+export function dayRules(day: Date, noStudyAfter: string, maxHoursPerDay: number) {
+  const end = Math.min(parseHHMM(noStudyAfter), 23 * 60);
+  const dow = day.getDay();
+  if (dow === 6) return { window: [9 * 60, Math.min(18 * 60, end)] as Range, breaks: [LUNCH], cap: Math.min(maxHoursPerDay * 60, 240), preferred: ["morning", "afternoon"] };
+  if (dow === 0) return { window: [10 * 60, Math.min(19 * 60, end)] as Range, breaks: [LUNCH], cap: Math.min(maxHoursPerDay * 60, 180), preferred: ["morning", "afternoon"] };
+  return { window: [DAY_START, Math.min(WEEKDAY_STUDY_END, end)] as Range, breaks: [LUNCH, DINNER], cap: maxHoursPerDay * 60, preferred: null };
+}
+
+/** Maps class events (in semester order) to topics (in course order): class i covers topic floor(i·T/N). */
+export function classTopics(classes: { id: string; start: Date }[], topics: PlanTopic[]): Record<string, string[]> {
+  const sortedT = [...topics].sort((a, b) => a.sortOrder - b.sortOrder);
+  const sortedC = [...classes].sort((a, b) => a.start.getTime() - b.start.getTime());
+  const out: Record<string, string[]> = {};
+  const N = sortedC.length;
+  const T = sortedT.length;
+  sortedC.forEach((c, i) => {
+    if (T === 0) {
+      out[c.id] = [];
+      return;
+    }
+    const a = Math.floor((i * T) / N);
+    const b = Math.floor(((i + 1) * T - 1) / N);
+    out[c.id] = sortedT.slice(a, Math.max(a, b) + 1).map((t) => t.id);
+  });
+  return out;
+}
 const MAX_PER_COURSE_PER_DAY = 180;
 const REVIEW_DAYS = 2;
 const SLOT_WINDOWS: Record<string, [number, number]> = {
@@ -76,7 +122,6 @@ export const parseHHMM = (s: string) => {
   return (h ?? 23) * 60 + (m ?? 0);
 };
 
-type Range = [number, number];
 
 function subtract(free: Range[], a: number, b: number): Range[] {
   const out: Range[] = [];
@@ -123,8 +168,8 @@ export function generatePlan(input: PlanInput): PlanResult {
   // Start from the formula's date; if a course doesn't fit (classes, other courses), pull only that course earlier.
   const extra: Record<string, number> = {};
   let best = runPlan(input, false, extra);
-  for (let i = 0; i < 12 && missingTotal(best) > 0; i++) {
-    for (const [id, h] of Object.entries(best.missingHours)) extra[id] = (extra[id] ?? 0) + Math.max(2, Math.ceil(h / 2));
+  for (let i = 0; i < 25 && missingTotal(best) > 0; i++) {
+    for (const [id, h] of Object.entries(best.missingHours)) extra[id] = (extra[id] ?? 0) + Math.max(2, Math.ceil(h / 1.5));
     const next = runPlan(input, false, extra);
     if (missingTotal(next) <= missingTotal(best)) best = next;
   }
@@ -180,26 +225,71 @@ function runPlan(input: PlanInput, startToday: boolean, extraDays: Record<string
   const lastDay = states.reduce((m, s) => (s.examDay > m ? s.examDay : m), today);
 
   for (let d = today; d <= lastDay; d = addDays(d, 1)) {
-    let free: Range[] = [[sameDay(d, now) ? Math.max(DAY_START, minuteOf(now) + 15) : DAY_START, dayEnd]];
+    const rules = dayRules(d, settings.noStudyAfter, settings.maxHoursPerDay);
+    let free: Range[] = [[sameDay(d, now) ? Math.max(rules.window[0], minuteOf(now) + 15) : rules.window[0], rules.window[1]]];
     if (free[0]![0] >= free[0]![1]) continue;
+    for (const [a, b] of rules.breaks) free = subtract(free, a, b);
     for (const b of busy) {
       if (b.end <= d || b.start >= addDays(d, 1)) continue;
-      const a = sameDay(b.start, d) ? minuteOf(b.start) - 10 : 0;
-      const e = sameDay(b.end, d) ? minuteOf(b.end) + 10 : 24 * 60;
+      const a = sameDay(b.start, d) ? minuteOf(b.start) - TRAVEL : 0;
+      const e = sameDay(b.end, d) ? minuteOf(b.end) + TRAVEL : 24 * 60;
       free = subtract(free, a, e);
     }
-    let capacity = settings.maxHoursPerDay * 60;
+    let capacity = rules.cap;
     for (const f of fixed) {
       if (!sameDay(f.start, d)) continue;
       free = subtract(free, minuteOf(f.start) - BREAK, minuteOf(f.end) + BREAK);
       capacity -= (f.end.getTime() - f.start.getTime()) / 60000;
     }
+    const dayPreferred =
+      rules.preferred ??
+      [...settings.preferredSlots.filter((p) => p === "afternoon" || p === "evening"), "afternoon", "evening", "morning"];
+
+    const push = (courseId: string, s: number, len: number, topicIds: string[], kind: SessionKind, classEventId?: string) => {
+      sessions.push({ courseId, topicIds, start: atMinute(d, s), end: atMinute(d, s + len), isReview: kind !== "study", kind, ...(classEventId ? { classEventId } : {}) });
+      free = subtract(free, s - BREAK, s + len + BREAK);
+      capacity -= len;
+    };
+
+    // Short review right after each class (after travel), otherwise in the evening, covering that class's topics.
+    const done = new Set(fixed.map((f) => f.classEventId).filter(Boolean));
+    for (const c of courses) {
+      for (const cl of c.classes ?? []) {
+        if (!sameDay(cl.start, d) || cl.end <= now || done.has(cl.id)) continue;
+        const after = minuteOf(cl.end) + TRAVEL;
+        const fits = (a: number) => free.some(([s, e]) => a >= s && a + CLASS_REVIEW_MIN <= e);
+        let at: number | null = fits(after) ? after : null;
+        if (at == null) {
+          for (const [s, e] of free) {
+            const a = Math.max(s, DINNER[1]);
+            if (a + CLASS_REVIEW_MIN <= e) { at = a; break; }
+          }
+        }
+        if (at == null) for (const [s, e] of free) if (s >= after && e - s >= CLASS_REVIEW_MIN) { at = s; break; }
+        if (at != null) {
+          push(c.id, at, CLASS_REVIEW_MIN, cl.topicIds, "review", cl.id);
+          // Review time is study time for that course: count it against its topics.
+          const st = states.find((x) => x.c.id === c.id);
+          if (st) {
+            let need = CLASS_REVIEW_MIN;
+            const order = [...st.topicLeft.filter((x) => cl.topicIds.includes(x.id)), ...st.topicLeft];
+            for (const x of order) {
+              if (need <= 0) break;
+              const take = Math.min(Math.max(0, x.left), need);
+              x.left -= take;
+              need -= take;
+            }
+            st.remaining = st.topicLeft.reduce((acc, x) => acc + Math.max(0, x.left), 0);
+          }
+        }
+      }
+    }
 
     const place = (courseId: string, len: number, topicIds: string[], isReview: boolean): boolean => {
-      const s = findSlot(free, len, settings.preferredSlots);
+      const s = findSlot(free, len, dayPreferred);
       if (s == null) return false;
-      sessions.push({ courseId, topicIds, start: atMinute(d, s), end: atMinute(d, s + len), isReview });
-      free = subtract(free, s, s + len + BREAK);
+      sessions.push({ courseId, topicIds, start: atMinute(d, s), end: atMinute(d, s + len), isReview, kind: isReview ? "exam_review" : "study" });
+      free = subtract(free, s - BREAK, s + len + BREAK);
       capacity -= len;
       return true;
     };
@@ -215,6 +305,15 @@ function runPlan(input: PlanInput, startToday: boolean, extraDays: Record<string
         if (len < MIN_SESSION) break;
         const high = s.c.topics.filter((t) => t.weight === "high").map((t) => t.id);
         if (!place(s.c.id, len, high.length ? high : s.c.topics.map((t) => t.id), true)) break;
+        // Exam-review time counts toward the course's hours.
+        let need = len;
+        for (const x of s.topicLeft) {
+          if (need <= 0) break;
+          const take = Math.min(Math.max(0, x.left), need);
+          x.left -= take;
+          need -= take;
+        }
+        s.remaining = s.topicLeft.reduce((acc, x) => acc + Math.max(0, x.left), 0);
         i++;
       }
       continue;
@@ -224,9 +323,11 @@ function runPlan(input: PlanInput, startToday: boolean, extraDays: Record<string
     let last: string | null = null;
     let guard = 0;
     while (capacity >= MIN_SESSION && guard++ < 30) {
-      const active = states
-        .filter((s) => s.remaining > 0.5 && d >= courseStart[s.c.id]! && d < s.reviewStart)
-        .filter((s) => (perCourse[s.c.id] ?? 0) + MIN_SESSION <= MAX_PER_COURSE_PER_DAY)
+      const open = states.filter((s) => s.remaining > 0.5 && d >= courseStart[s.c.id]! && d < s.reviewStart);
+      // The per-course daily cap only matters when there is another course to alternate with.
+      const courseCap = open.length <= 1 ? 24 * 60 : MAX_PER_COURSE_PER_DAY;
+      const active = open
+        .filter((s) => (perCourse[s.c.id] ?? 0) + MIN_SESSION <= courseCap)
         .sort(
           (a, b) =>
             b.remaining / Math.max(1, daysBetween(d, b.reviewStart)) -
@@ -239,7 +340,7 @@ function runPlan(input: PlanInput, startToday: boolean, extraDays: Record<string
         MAX_SESSION,
         Math.max(MIN_SESSION, Math.round(s.remaining)),
         capacity,
-        MAX_PER_COURSE_PER_DAY - (perCourse[s.c.id] ?? 0),
+        courseCap - (perCourse[s.c.id] ?? 0),
       );
       len = Math.min(len, longestFree(free));
       if (len < MIN_SESSION) break;
