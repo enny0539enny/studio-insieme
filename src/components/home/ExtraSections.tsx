@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { Clock, Flame, Megaphone, Sparkles, Users, UserCheck, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -66,7 +67,7 @@ export function ForYouSection({ data }: { data: Dashboard }) {
   );
 }
 
-function Card({ icon: Icon, title, eyebrow, children }: { icon: typeof Heart; title: string; eyebrow?: string; children: React.ReactNode }) {
+function Card({ icon: Icon, title, eyebrow, children }: { icon: typeof Heart; title: string; eyebrow?: string; children: ReactNode }) {
   return (
     <div className="flex w-64 shrink-0 snap-start flex-col gap-2 rounded-2xl border border-border bg-card p-4 shadow-soft">
       <Icon className="h-5 w-5 text-secondary" strokeWidth={1.75} />
